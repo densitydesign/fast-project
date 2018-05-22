@@ -14,15 +14,11 @@
 ## Authentication
 TODO
 
-## Create indexes
-Run `mongo 127.0.0.1:27017/FaST indexes.js`
-
-## Import data
-The script assumes data are in `../../../csv/`
-
-- Make sure `import_data.sh` is executable. If not just type `chmod +x import_data.sh`
-- Run `./import_data.sh`
-
+## Init
+- Make sure `init.sh` and `convert.py`,  are executable. If not just type `chmod +x <file>`
+- Run `./init.sh`
+    - Creates indexes in the database
+    - Converts and imports the data
 
 
 
