@@ -6,6 +6,9 @@ import sys
 from sklearn.manifold import TSNE
 
 datapath = ' ../../../csv/'
+L_RATE = 50 # parameter to tune in order to have a better distribution of data points
+			# too high value: "ball effect"
+			# too low value: too much overlap between points
 
 def manipulateVector(v):
     outVector = []
@@ -26,7 +29,7 @@ for index, x in data.iterrows():
     X.append(manipulateVector(x['vector']))
 
 X1 = np.concatenate(X).reshape([N, 1024])
-X_embedded = TSNE(n_components=2).fit_transform(X1)
+X_embedded = TSNE(n_components=2, learning_rate=L_RATE).fit_transform(X1)
 tsne_out = pd.DataFrame(X_embedded)
 tsne_out.columns = ['x','y']
 tsne_out['id_post'] = data['id_post']
