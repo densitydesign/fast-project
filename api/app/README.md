@@ -10,4 +10,6 @@
 - `/` or `/brands` -> List of brands
 - `/posts/:brand_id` -> List of posts of `brand_id`
 
+## Swagger docs
 
+- Once the api is running, simply go to `/apidocs`
