@@ -1,13 +1,15 @@
 # API doc
 
-# Requirements
-- The app is based on Flask and some other dependencies
+## Requirements
+- The app is based on Python Flask 
 - Just type `pip install requirements.txt`
-- I strongly suggest you to use a virtual env (https://virtualenv.pypa.io/en/stable/)
+- I recommend to use a virtual env (https://virtualenv.pypa.io/en/stable/)
 
-# Endponts
+## Endponts
 
 - `/` or `/brands` -> List of brands
 - `/posts/:brand_id` -> List of posts of `brand_id`
 
+## Swagger docs
 
+- Once the api is running, simply go to `/apidocs`
