@@ -5,7 +5,7 @@ import sys
 
 from sklearn.manifold import TSNE
 
-datapath = ' ../../../csv'
+datapath = '../../../csv'
 L_RATE = 50 # parameter to tune in order to have a better distribution of data points
 			# too high value: "ball effect"
 			# too low value: too much overlap between points
