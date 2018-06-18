@@ -40,51 +40,42 @@ def generateTables(targetpath, netfile, net):
 
 temppath = 'temp/'
 path = 'data/'
-	
+
+tempnodefile = temppath+'nodes.csv'
+tempedgefile = tempath+'edges.csv'
+
 t_net = snap.LoadEdgeListNet(path+'followers_network.csv', '\t')
 
-start = time.time()
-
-it = t_net.BegNI()
-V = t_net.GetNodes()
-
-tagsPerPost = {}	
-with open(temppath+'reduced_nodes.csv', 'w') as nodefile:
-	nodefile.write('id\n')	
-	for i in range(V):
-		nid = it.GetId()
-		type = t_net.GetStrAttrDatN(nid, 'type')
-		id_post = t_net.GetStrAttrDatN(nid, 'id')
-		timestamp = t_net.GetStrAttrDatN(nid, 'content')
-		
-		if type == 'post':
-			nodefile.write('{}\n'.format(id_post))
-			
-			tags = snap.TIntV()
-			snap.GetNodesAtHop(t_net, nid, 1, tags, True)
-			
-			tags.Merge()
-			tagsPerPost[id_post] = tags
-		it.Next()
-
-t_net.Clr()
-		
-with open(temppath+'reduced_edges.csv', 'w') as edgefile:
-	edgefile.write('source,target,weight\n')
+# remove user nodes to avoid that path between posts
+for i in range(t_net.GetNodes()):
+	nid = it.GetId()
+	type = t_net.GetStrAttrDatN(nid, 'type')
 	
-	for posttuple in list(itertools.combinations(tagsPerPost.keys(), 2)):
-		p0 = posttuple[0]
-		p1 = posttuple[1]
-		
-		tags0 = tagsPerPost[p0]
-		tags1 = tagsPerPost[p1]
-	
-		commonT = snap.TIntV()
-		tags0.Intrs(tags1, commonT)
-		Ntags = commonT.Len()
+	if type == 'user':
+		t_net.DelNode(nid)
+	it.Next()
 
-		if Ntags > 0:
-			edgefile.write('{},{},{}\n'.format(p0,p1,Ntags))
+with open(tempnodefile, 'w') as nodefile:
+	with open(tempedgefile, 'w') as edgefile:
+		nodefile.write('id\n')
+		edgefile.write('source,target,weight\n')
+		
+		for i in range(t_net.GetNodes()):
+			nid = it.GetId()
+			type = t_net.GetStrAttrDatN(nid, 'type')
+			sourcestringid = t_net.GetStrAttrDatN(nid, 'id')
+			
+			if type == 'post':
+				nodefile.write('{}\n'.format(sourcestringid))
+				posts = snap.TIntV()
+				snap.GetNodesAtHop(t_net, nid, 2, posts, False)
+				
+				for p in posts:
+					stringid = t_net.GetStrAttrDatN(p, 'id')
+					count = getLen2Paths(net, nid, p)
+					nodefile.write('{}\n'.format(stringid))
+					edgefile.write('{},{},{}\n'.format(sourcestringid, stringid, count))
+			it.Next()
 
 #upload these saved tables using TTable object
 context = snap.TTableContext()
@@ -99,8 +90,8 @@ n_schema = snap.Schema()
 n_schema.Add(snap.TStrTAttrPr("id", snap.atStr))
 
 #define TTable objects of edges and nodes
-edgetable = snap.TTable.LoadSS(e_schema, temppath+'reduced_edges.csv', context, ",", snap.TBool(True))
-nodetable = snap.TTable.LoadSS(n_schema, temppath+'reduced_nodes.csv', context, ",", snap.TBool(True))
+edgetable = snap.TTable.LoadSS(e_schema, tempnodefile, context, ",", snap.TBool(True))
+nodetable = snap.TTable.LoadSS(n_schema, tempedgefile, context, ",", snap.TBool(True))
 
 #define (if any) attribute names using SNAP string vectors
 edgeattrv = snap.TStrV()
