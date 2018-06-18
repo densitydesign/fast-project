@@ -46,6 +46,8 @@ tempedgefile = temppath+'edges.csv'
 
 t_net = snap.LoadEdgeListNet(path+'followers_network.csv', '\t')
 
+it = t_net.BegNI()
+
 # remove user nodes to avoid that path between posts
 for i in range(t_net.GetNodes()):
 	nid = it.GetId()
@@ -60,7 +62,11 @@ with open(tempnodefile, 'w') as nodefile:
 		nodefile.write('id\n')
 		edgefile.write('source,target,weight\n')
 		
-		for i in range(t_net.GetNodes()):
+		it = t_net.BegNI()
+		V = t_net.GetNodes()
+		perc = 0
+		prev_perc = -1
+		for i in range(V):
 			nid = it.GetId()
 			type = t_net.GetStrAttrDatN(nid, 'type')
 			sourcestringid = t_net.GetStrAttrDatN(nid, 'id')
@@ -72,10 +78,16 @@ with open(tempnodefile, 'w') as nodefile:
 				
 				for p in posts:
 					stringid = t_net.GetStrAttrDatN(p, 'id')
-					count = getLen2Paths(net, nid, p)
-					nodefile.write('{}\n'.format(stringid))
+					count = getLen2Paths(t_net, nid, p)
 					edgefile.write('{},{},{}\n'.format(sourcestringid, stringid, count))
 			it.Next()
+			perc = perc + 1
+			curr_perc = float(perc)*100/V
+			if curr_perc >= prev_perc+1:
+				print 'Completion: {:.1f}%...'.format(curr_perc)
+				prev_perc = curr_perc
+
+print 'Graph building...'
 
 #upload these saved tables using TTable object
 context = snap.TTableContext()
