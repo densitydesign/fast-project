@@ -17,9 +17,9 @@ def getLen2Paths(net, sourceid, targetid):
 def generateTables(targetpath, netfile, net):
 	#split file into node and edge file
 	net_file = open(netfile, 'r') 
-	nodes_file = open(targetpath+'reduced_nodes.csv', 'w')
+	nodes_file = open(targetpath+'post_reduced_nodes.csv', 'w')
 	nodes_file.write('id\tid_post\n')
-	edges_file = open(targetpath+'reduced_edges.csv', 'w')
+	edges_file = open(targetpath+'post_reduced_edges.csv', 'w')
 	edges_file.write('source\ttarget\tweight\n')
 	
 	n_nodes = net.GetNodes()
@@ -53,7 +53,7 @@ path = 'data/'
 tempnodefile = temppath+'nodes.csv'
 tempedgefile = temppath+'edges.csv'
 
-t_net = snap.LoadEdgeListNet(path+'test_network.csv', '\t')
+t_net = snap.LoadEdgeListNet(path+'followers_network.csv', '\t')
 
 start = time.time()
 
