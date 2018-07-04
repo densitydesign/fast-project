@@ -32,9 +32,6 @@ responses:
               confidence:
                 type: string
                 description: the confidence of this concept
-        imagevector:
-          type: string
-          description: A string including the vector representing the k-dimensional embedding of this post
         "is_video":
           type: string
           description: A string "True" or "False" including a boolean value of whether this post includes a video
@@ -63,9 +60,6 @@ responses:
             type: string
           minItems: 2
           maxItems: 2
-        "shortcode":
-          type: string
-          description: No idea
         "taken_at_time":
           type: string
           description: The date and time at which this post was taken from the web
