@@ -27,21 +27,21 @@ class Brand(Resource):
 
 class Post(Resource):
     @swag_from("yamls/post.yml")
-    def get(self, brand_id):
+    def get(self, brand_id, limit=0):
         cursor = mongo.db.post.find(
             {
                 "owner": brand_id
             },
             {
                 "_id": 0
-            })
+            }).limit(limit)
         result = list(cursor)
         return jsonify(result)
 
 
 api = Api(app)
 api.add_resource(Brand, "/brands")
-api.add_resource(Post, "/posts/<string:brand_id>")
+api.add_resource(Post, "/posts/<brand_id>", "/posts/<string:brand_id>/limit/<int:limit>")
 
 
 if __name__ == "__main__":
