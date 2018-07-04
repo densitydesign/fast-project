@@ -2,13 +2,16 @@ from flask import Flask, jsonify
 from flask_pymongo import PyMongo
 from flask_restful import Api, Resource
 from flasgger import Swagger, swag_from
-
+from flask_cors import CORS
 
 app = Flask(__name__)
 swagger = Swagger(app)
 app.config["MONGO_DBNAME"] = "FaST"
 mongo = PyMongo(app, config_prefix='MONGO')
 APP_URL = "http://127.0.0.1:5000"
+
+# Configure app
+CORS(app)
 
 
 class Brand(Resource):
@@ -27,21 +30,21 @@ class Brand(Resource):
 
 class Post(Resource):
     @swag_from("yamls/post.yml")
-    def get(self, brand_id):
+    def get(self, brand_id, limit=0):
         cursor = mongo.db.post.find(
             {
                 "owner": brand_id
             },
             {
                 "_id": 0
-            })
+            }).limit(limit)
         result = list(cursor)
         return jsonify(result)
 
 
 api = Api(app)
 api.add_resource(Brand, "/brands")
-api.add_resource(Post, "/posts/<string:brand_id>")
+api.add_resource(Post, "/posts/<brand_id>", "/posts/<string:brand_id>/limit/<int:limit>")
 
 
 if __name__ == "__main__":
