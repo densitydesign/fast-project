@@ -15,6 +15,9 @@
 TODO
 
 ## Init
+- In the folder `../../../csv/` there should be:
+    - a file `brand.csv`
+    - a set of folder: one for each brand (eg. `daftcollectionofficial`, `athenaprocopiou` and so on.)
 - Make sure `init.sh` and `convert.py`,  are executable. If not just type `chmod +x <file>`
 - Run `./init.sh`
     - Creates indexes in the database
