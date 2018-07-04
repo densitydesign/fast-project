@@ -2,13 +2,16 @@ from flask import Flask, jsonify
 from flask_pymongo import PyMongo
 from flask_restful import Api, Resource
 from flasgger import Swagger, swag_from
-
+from flask_cors import CORS
 
 app = Flask(__name__)
 swagger = Swagger(app)
 app.config["MONGO_DBNAME"] = "FaST"
 mongo = PyMongo(app, config_prefix='MONGO')
 APP_URL = "http://127.0.0.1:5000"
+
+# Configure app
+CORS(app)
 
 
 class Brand(Resource):
