@@ -1,1 +1,4 @@
 temp
+raw-data
+!**/relevant_tags.csv
+**/user_tag_matrix.csv
