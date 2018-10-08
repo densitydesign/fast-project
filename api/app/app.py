@@ -28,44 +28,22 @@ class Brand(Resource):
         result = list(cursor)
         return jsonify(result)
 
-from flask_restful.reqparse import RequestParser
-        
-class Post(Resource):
-    parser = RequestParser()
+from api.posts import PostRequests, build_query, parse_coords
 
-    parser.add_argument('start', type=int)
-    parser.add_argument('end'  , type=int)
-    parser.add_argument('limit', type=int)
-    parser.add_argument('content', type=str)
-    
+class Post(Resource, PostRequests):
+
     @swag_from("yamls/post.yml")
     def get(self, brand_id):
 
-        args = self.parser.parse_args()
+        args = self.parse_args()
 
-        query = {
-                "owner": brand_id
-            }
+        query = build_query(args, {"owner": brand_id})
             
-        limit = args.limit if (args.limit) else 10
-
-        time_query = {}
-        if (args.start):
-            time_query["$gte"] = args.start
-        if (args.end):
-            time_query["$lte"] = args.end
-        if len(time_query)>0:
-            query["taken_at_timestamp"] = time_query
-            
-        if (args.content):
-            query["main_content"] = args.content
-
         print(query)
-            
-        cursor = mongo.db.post.find(query,{"_id": 0}).limit(limit)
-        result = list(cursor)
-        return jsonify(result)
 
+        cursor = mongo.db.post.find(query, {"_id": 0}).limit(args.limit)
+
+        return jsonify(map(parse_coords(args.competitor), cursor))
 
 api = Api(app)
 api.add_resource(Brand, "/brands")
