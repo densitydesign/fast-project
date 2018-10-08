@@ -33,7 +33,7 @@ def pair_coordinates():
 		N = input.shape[0]
 
 		X1 = np.concatenate(input['X']).reshape([N, 1024])
-		X_embedded = TSNE(n_components=2, learning_rate=50).fit_transform(X1)
+		X_embedded = TSNE(n_components=2, learning_rate=L_RATE).fit_transform(X1)
 		tsne_out = pd.DataFrame(X_embedded)
 		tsne_out.columns = ['x','y']
 		tsne_out['id_post'] = input['id_post']
@@ -68,7 +68,7 @@ def single_coordinates(brand_list):
 			X.append(manipulateVector(x['vector']))
 
 		X1 = np.concatenate(X).reshape([N, 1024])
-		X_embedded = TSNE(n_components=2, learning_rate=50).fit_transform(X1)
+		X_embedded = TSNE(n_components=2, learning_rate=L_RATE).fit_transform(X1)
 		tsne_out = pd.DataFrame(X_embedded)
 		tsne_out.columns = ['x','y']
 		tsne_out['id_post'] = data['id_post']
@@ -102,7 +102,5 @@ for pid in pair_dict.keys():
 	coords.update(single_dict[int(pid)])
 	#print coords
 	
-    db.post.update_one({'id_post': pid},
-                       {'$set': {'pair_coord': coords}}, 
-                       upsert=False)
+	db.post.update_one({'id_post': pid}, {'$set': {'pair_coord': coords}}, upsert=False)
 
