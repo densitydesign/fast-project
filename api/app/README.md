@@ -9,6 +9,7 @@
 
 - `/` or `/brands` -> List of brands
 - `/posts/:brand_id` -> List of posts of `brand_id`
+- `/posts/:brand_id/limit/n` -> List of n posts of `brand_id`
 
 ## Swagger docs
 
