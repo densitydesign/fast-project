@@ -3,6 +3,7 @@ from flask_pymongo import PyMongo
 from flask_restful import Api, Resource
 from flasgger import Swagger, swag_from
 from flask_cors import CORS
+from flask import request
 
 app = Flask(__name__)
 swagger = Swagger(app)
@@ -27,25 +28,26 @@ class Brand(Resource):
         result = list(cursor)
         return jsonify(result)
 
+from api.posts import PostRequests, build_query, parse_coords
 
-class Post(Resource):
+class Post(Resource, PostRequests):
+
     @swag_from("yamls/post.yml")
-    def get(self, brand_id, limit=0):
-        cursor = mongo.db.post.find(
-            {
-                "owner": brand_id
-            },
-            {
-                "_id": 0
-            }).limit(limit)
-        result = list(cursor)
-        return jsonify(result)
+    def get(self, brand_id):
 
+        args = self.parse_args()
+
+        query = build_query(args, {"owner": brand_id})
+            
+        print(query)
+
+        cursor = mongo.db.post.find(query, {"_id": 0}).limit(args.limit)
+
+        return jsonify(map(parse_coords(args.competitor), cursor))
 
 api = Api(app)
 api.add_resource(Brand, "/brands")
-api.add_resource(Post, "/posts/<brand_id>", "/posts/<string:brand_id>/limit/<int:limit>")
-
+api.add_resource(Post, "/posts/<brand_id>", "/posts/<string:brand_id>")
 
 if __name__ == "__main__":
     app.run(debug=True)
