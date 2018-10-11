@@ -44,10 +44,10 @@ for b in brands:
 		#print likes_obj
 		
 		# update objects in the DB
-		db.post.update_one({'id_post': pid},
+		result = db.post.update_one({'id_post': pid},
 				   {'$set': {'likes': likes_obj}},
 				   upsert=False)
-				   
+		print result  
 		# percentage of completion
 		perc += 1
 		print 'Completion: {:.1f}%'.format(float(perc)*100/posts.shape[0])
