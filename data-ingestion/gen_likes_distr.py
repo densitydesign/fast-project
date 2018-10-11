@@ -22,7 +22,7 @@ for b in brands:
 	perc = 0
 	for index, p in posts.iterrows():
 		#print p['taken_at_time'], p['likes_count']
-		pid = int(p['id_post'])
+		pid = p['id_post']
 		likes = int(p['likes_count'])
 		date = datetime.strptime(p['taken_at_time'], '%Y-%m-%d %H:%M:%S')
 		
