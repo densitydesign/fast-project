@@ -43,7 +43,7 @@ class Post(Resource, PostRequests):
 
         cursor = mongo.db.post.find(query, {"_id": 0}).limit(args.limit)
 
-        return jsonify(map(parse_coords(args.competitor), cursor))
+        return jsonify(list(map(parse_coords(args.competitor), cursor)))
 
 api = Api(app)
 api.add_resource(Brand, "/brands")
