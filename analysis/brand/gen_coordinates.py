@@ -25,7 +25,7 @@ def perform_tsne(input):
 
 	X1 = np.concatenate(input['X']).reshape([N, 1024])
 
-	X_embedded = TSNE(n_components=2, learning_rate=50).fit_transform(X1)
+	X_embedded = TSNE(n_components=2, learning_rate=L_RATE).fit_transform(X1)
 
 	tsne_out = pd.DataFrame(X_embedded)
 	tsne_out.columns = ['x', 'y']

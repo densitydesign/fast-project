@@ -13,10 +13,11 @@ def load_data(folder, collection, delimiter=","):
 
 # main
 folder = sys.argv[1]
+path = '../../csv/'
 
 # load followers posts in same collection of brands posts
 output = []
-post_data_list = load_data(folder, "post")
+post_data_list = load_data(path + folder, "post")
 for current_post in post_data_list:
     id_post = current_post["id_post"]
 
