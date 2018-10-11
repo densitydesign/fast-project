@@ -31,7 +31,7 @@ for b in brands:
 		# distribution definition
 		sum_distr = 0
 		while sum_distr != likes:
-			lam = random.uniform(0.05, 0.7)
+			lam = random.uniform(0.05, 6.8)
 			dist = poisson(lam, len(date_range))
 			sum_distr = sum(dist)
 		
