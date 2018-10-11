@@ -47,7 +47,7 @@ for b in brands:
 		result = db.post.update_one({'id_post': pid},
 				   {'$set': {'likes': likes_obj}},
 				   upsert=False)
-		print 'ACK: ' + result['acknowledged'] + ' ,matched ' + str(result['matchedCount']) + ' ,updated ' + str(result['modifiedCount'])
+		print 'ACK: ' + result.acknowledged + ' ,matched ' + str(result.matched_count) + ' ,updated ' + str(result.modified_count)
 		# percentage of completion
 		perc += 1
 		print 'Completion: {:.1f}%'.format(float(perc)*100/posts.shape[0])
