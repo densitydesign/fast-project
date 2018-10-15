@@ -4,7 +4,7 @@ from numpy.random import poisson
 import random 
 from datetime import datetime
 from datetime import timedelta
-#from pymongo import MongoClient
+from pymongo import MongoClient
 
 brands = ['lisamariefernandez','zeusndione','dodobaror','athenaprocopiou','miguelinagambaccini', 'emporiosirenuse','daftcollectionofficial','loupcharmant','muzungusisters','heidikleinswim']
 
