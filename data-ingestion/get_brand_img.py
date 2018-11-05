@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import sys
 import re
+from pymongo import MongoClient
 
 def solveImgUrl(postUrl):
 	page = requests.get(url)
@@ -10,8 +11,26 @@ def solveImgUrl(postUrl):
 	except Exception as e:
 		print 'Error with post: {}'.format(postUrl)
 		print e
-		return None
+		return -1
 
+client = MongoClient('mongodb://localhost:27017/')
+db = client['FaST']
+
+collection_ids = [str(id) for id in db.post.find().distinct('_id')]
+
+for mongo_id in collection_ids:
+    p = db.post.find_one({"_id": mongo_id})
+    url = p['link_post']
+    
+    new_url = solveImgUrl(url)
+    if new_url == -1:
+        new_url = url
+        
+    res = db.post.update_one({'_id': mongo_id},
+					{'$set': {'url_img': new_url}},
+				   upsert=False)
+    
+'''
 datapath = '../../csv/'
 		
 brand = sys.argv[1]
@@ -31,3 +50,4 @@ for index, p in posts.iterrows():
 			handler.write(img_data)
 	perc = perc + 1
 	print 'Completion: {:.1f}%...'.format(float(perc)*100/N)
+'''
