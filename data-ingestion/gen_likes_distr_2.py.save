@@ -1,4 +1,3 @@
-
 import pandas as pd
 import numpy as np
 from numpy.random import poisson
@@ -22,7 +21,7 @@ for b in brands:
 	
 	perc = 0
 	for index, p in posts.iterrows():
-		pid = str(p['id_post'])
+		pid = str(p['shortcode'])
 		shortcode = p['shortcode']
 		likes_list = list(likes[likes['shortcode'] == shortcode]['username'])
 
@@ -47,8 +46,7 @@ for b in brands:
 		#print likes_obj
 		
 		# update objects in the DB
-		result = db.post.update_one({'id_post': pid},
-					{'$set': {'likes': likes_obj}},
+		result = db.post.update_one({'id_post': pid}'$set': {'likes': likes_obj}},
 				   upsert=False)
 		print 'ACK: ' + str(result.acknowledged) + ' ,matched ' + str(result.matched_count) + ' ,updated ' + str(result.modified_count)
 
