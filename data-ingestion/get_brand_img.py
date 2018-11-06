@@ -9,8 +9,8 @@ def solveImgUrl(postUrl):
 	try:
 		return re.findall(r'\"[\S]*.jpg', page.text)[0][1:]
 	except Exception as e:
-		print 'Error with post: {}'.format(postUrl)
-		print e
+		print('Error with: ' + postUrl)
+		print(e)
 		return -1
 
 client = MongoClient('mongodb://localhost:27017/')
@@ -23,6 +23,7 @@ for mongo_id in collection_ids:
     url = p['link_post']
     
     new_url = solveImgUrl(url)
+    print(new_url)
     if new_url == -1:
         new_url = url
         
