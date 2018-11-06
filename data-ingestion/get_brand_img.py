@@ -1,6 +1,4 @@
-import pandas as pd
 import requests
-import sys
 import re
 from pymongo import MongoClient
 
@@ -16,9 +14,10 @@ def solveImgUrl(postUrl):
 client = MongoClient('mongodb://localhost:27017/')
 db = client['FaST']
 
-collection_ids = [str(id) for id in db.post.find().distinct('_id')]
+collection_ids = [id for id in db.post.find().distinct('_id')]
 
 for mongo_id in collection_ids:
+    print(mongo_id)
     p = db.post.find_one({"_id": mongo_id})
     url = p['link_post']
     
