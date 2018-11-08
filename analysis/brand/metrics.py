@@ -19,7 +19,7 @@ def dateGroupByKey(field):
     }
 
 def contentRatio(content):
-    return {"$cond": [ {"$gt": ["$TOT", 0]}, {"$divide": [content, "$TOT"] }, 0.33 ]}
+    return {"$cond": [ {"$gt": ["$TOT", 0]}, {"$divide": [content, "$TOT"] }, 0.0 ]}
     # return { "$divide": [content, "$TOT"] }
 
 def brand_stats(brand, post_coll, stats_coll):
@@ -65,7 +65,8 @@ def brand_stats(brand, post_coll, stats_coll):
 	likes = pd.DataFrame( list( coll.aggregate(likes_count) ) )
 
 	def get_date(df):
-		return df["_id"].apply(lambda x: datetime.strptime("%04d%02d%02d" % (x["year"], x["month"],x["day"]), "%Y%m%d"))
+		return df["_id"].apply(
+			lambda x: int(datetime.strptime("%04d%02d%02d" % (x["year"], x["month"],x["day"]), "%Y%m%d").strftime("%s") ) )
 
 	posts["date"] = get_date(posts)
 	likes["date"] = get_date(likes)
