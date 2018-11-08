@@ -3,10 +3,8 @@ import numpy as np
 from sklearn.manifold import TSNE
 from pymongo import MongoClient
 
-brands = ['daftcollectionofficial','loupcharmant','muzungusisters','heidikleinswim','lisamariefernandez',
-		  'zeusndione','dodobaror','athenaprocopiou','miguelinagambaccini', "emporiosirenuse"]
+from analysis import datapath, brands
 
-datapath = '../../../csv'
 L_RATE = 50 # parameter to tune in order to have a better distribution of data points
 			# too high value: "ball effect"
 			# too low value: too much overlap between points
