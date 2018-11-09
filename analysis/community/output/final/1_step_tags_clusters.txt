@@ -1,6 +1,6 @@
 n_cluster	dim	hashtags
--1	917	miamibeach,boston,luxurygifts,followthebuyers,luxurylife,mixandmatch,inspiring,umbria,shoppingonline,summertime,beige,summervibes,longweekend,amsterdam,trends,heaven,boutiqueshopping,seainspired,fabric,bronze
-0	370	indianocean,innerpeace,spring,grey,sunsetlovers,romantic,halloween,blessings,bathroom,sun,cocktail,stripes,cheers,foodporn,gorgeous,doyoutravel,coast,saturdaynight,thursday,aroundtheworld
+-1	917	
+0	370	colour,sunday,friday,weekend,coffee,monday,texture,red,moon,timeless,relax,flowers,white,holiday,easter,autumn,relaxing,green,sunset,seaside
 1	23	sydney,keychain,australia,streetstyle,bali,fashiondaily,mochila,manila,moscow,seoul,berlin,fashionaddict,streetstyleluxe,stylediaries,fashiondiaries,munich,santamonica,instablogger,itbag,philippines,verao2017,wayuubag,medellin
 2	39	turquoise,earrings,necklace,jewellery,accessories,pendant,bracelets,silver,gift,sparkle,gold,jewelry,ring,shop,diamond,jewelrydesigner,goldplated,dressedup,bridal,shoppingaddict,rings,diamonds,antique,losangeles,hollywood,bride,shoppingtime,beverlyhills,bracelet,jewelrydesign,jewelryoftheday,evileye,armcandy,boutiques,promo,platinum,engagementring,instajewelry,antoniakarra
 3	16	positano,amalficoast,capri,ravello,amalfi,sorrento,sorrentocoast,costieraamalfitana,costiera,praiano,atrani,maiori,salerno,amalfitana,villatreville,casaangelina
