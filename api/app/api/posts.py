@@ -11,7 +11,7 @@ class PostRequests(object):
     parser.add_argument('end', type=int)
     parser.add_argument('limit', type=int)
     parser.add_argument('content', type=str)
-    parser.add_argument('competitor', type=str, required=False)
+    parser.add_argument('competitor', type=int, required=False)
 
     def parse_args(self):
         args = self.parser.parse_args()
