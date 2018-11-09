@@ -14,21 +14,16 @@ APP_URL = "http://127.0.0.1:5000"
 # Configure app
 CORS(app)
 
+from api.brands import BrandsStorage
 
 class Brand(Resource):
+
     @swag_from("yamls/brands.yml")
     def get(self):
-        cursor = mongo.db.brand.find(
-            {},
-            {
-             "_id": 0,
-             "id_user": 1,
-             "username": 1
-            })
-        result = list(cursor)
-        return jsonify(result)
+        storage = BrandsStorage(mongo.db.brand)
+        return jsonify(storage.reload().json)
 
-from api.posts import PostRequests, build_query, parse_coords
+from api.posts import PostRequests, build_query as post_query, parse_coords
 
 class Post(Resource, PostRequests):
 
@@ -37,17 +32,38 @@ class Post(Resource, PostRequests):
 
         args = self.parse_args()
 
-        query = build_query(args, {"owner": brand_id})
+        query = post_query(args, {"owner": brand_id})
             
         print(query)
 
         cursor = mongo.db.post.find(query, {"_id": 0}).limit(args.limit)
+        storage = BrandsStorage(mongo.db.brand)
 
-        return jsonify(map(parse_coords(args.competitor), cursor))
+        f = parse_coords(storage.get_name(int(args.competitor)))
+
+        return jsonify([ f(x) for x in cursor])
+
+from api.metrics import MetricsRequests, build_query as metric_query, aggregate_response
+
+class Metrics(Resource, MetricsRequests):
+
+    def get(self, brand_id):
+        args = self.parse_args()
+
+        storage = BrandsStorage(mongo.db.brand)
+        print(storage.brands)
+        query = metric_query(args, {"brand": storage.get_name(int(brand_id))})
+
+        print(query)
+
+        cursor = mongo.db.stats.find(query,{"_id": 0})
+
+        return jsonify( aggregate_response( list( cursor ) ) )
 
 api = Api(app)
 api.add_resource(Brand, "/brands")
 api.add_resource(Post, "/posts/<brand_id>", "/posts/<string:brand_id>")
+api.add_resource(Metrics, "/metrics/<brand_id>", "/metrics/<string:brand_id>")
 
 if __name__ == "__main__":
     app.run(debug=True)
