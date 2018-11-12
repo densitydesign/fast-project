@@ -1,0 +1,8 @@
+Django<1.12
+psycopg2
+ipython
+Pillow
+django-suit
+simplejson
+django_extensions
+requests
