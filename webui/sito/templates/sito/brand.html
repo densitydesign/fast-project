@@ -55,13 +55,16 @@
 
 <div class="modal"><!-- Place at bottom of page --></div>
 
+<div>
+  <canvas id="myRadarChart" width="40" height="40"></canvas>
+</div>
 
 {% endblock %}
 
 {% block bottom_script %}
 <script src="/static/sito/js/lodash.js"></script>
 <script src="/static/sito/js/plotly-latest.min.js"></script>
-<script src="/static/sito/js/small.js"></script>
+<script src="/static/sito/js/dati.js"></script>
 
 <script type="text/javascript">  
   var maxLike = 1;
@@ -182,6 +185,8 @@
 
   }
   function aggiornaDati() {
+    disegnaGrafico(dati);
+    return;
     $body.addClass("loading");
 
     if (competitor != "") {
@@ -244,4 +249,58 @@
          
   $body = $("body");    
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+<script type="text/javascript">
+var ctx = $('#myRadarChart');
+var color = Chart.helpers.color;
+var blue = 'rgb(54, 162, 235)';
+var purple = 'rgb(153, 102, 255)';
+var perca  = 25;
+var percb = 15;
+var dataseta = [20, 70, 50];
+var datasetb = [34, 65, 45];
+
+data = {
+    labels: ["Landscape\n " + 'Azienda A: ' + dataseta[0] + ' - Azienda B: ' + datasetb[0]  , "Fashion", "Style"],
+    datasets: [{
+      label: "Azienda A",
+      backgroundColor: color(blue).alpha(0.2).rgbString(),
+      borderColor: blue,
+      data: dataseta
+    }, {
+      label: "Azienda B",
+      backgroundColor: color(purple).alpha(0.2).rgbString(),
+      borderColor: purple,
+      data: datasetb
+    }]
+};
+
+options = {
+  scale: {
+    ticks: {
+      beginAtZero: true,
+      min: 0,
+      max: 80,
+      stepSize: 10
+    },
+    pointLabels: {
+      fontSize: 40
+    }
+  },
+  legend: {
+    position: 'left'
+  }
+};
+
+var myChart = new Chart(ctx, {
+    type: 'radar',
+    data: data,
+    options: options
+});
+</script>
+
 {% endblock %}
