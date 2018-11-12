@@ -62,8 +62,12 @@
 
 </div>
 <div style="width:100%; min-height:100px; clear:both;">
-  <div id="slider"></div>
-
+  <div style="width:100%; clear:both;">
+    <span style="float:right; margin-right: 40px; padding-bottom:10px;">PROPORTION</span><br/>
+  </div>
+  <div style="width:100%; clear:both;">
+    <div id="slider"></div>
+  </div>
 </div>
 
 <div class="modal"><!-- Place at bottom of page --></div>
@@ -146,7 +150,8 @@
         var pts = '';
         for(var i=0; i < data.points.length; i++){
             var datiImg = _.find(images, { 'x': data.points[i].x, 'y': data.points[i].y });
-            var tag = _.join(_.flatMap(datiImg.imagetag, function(el) { return el.concept}), '<br/>');
+            var appiattiti = _.concat(_.flatten(datiImg.imagetag.AMBIENT), _.flatten(datiImg.imagetag.FASHION), _.flatten(datiImg.imagetag.LIFESTYLE)); 
+            var tag = _.join(_.flatMap(appiattiti, function(el) { return el.concept}), '<br/>');
             $('#data').html('<img src="'+datiImg.source+'" style="width:100%;"/><br/><br/>'+datiImg.caption +'<br/><br/>Likes: <strong>'+datiImg.likes_count +
               '</strong><br><br>Tags:<br/>'+ tag + '<br/><br/>'+
               '<a href="'+datiImg.link_post+'" target="blank">'+datiImg.link_post+'</a>');
