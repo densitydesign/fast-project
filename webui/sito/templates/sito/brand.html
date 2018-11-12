@@ -79,14 +79,14 @@
         "y": parseFloat(post.postcoord.y),
         "sizex": ((parseInt(post.likes_count))/(maxLike-minLike))*scalefactor,
         "sizey": ((parseInt(post.likes_count))/(maxLike-minLike))*scalefactor,
-        "xanchor": "right",
-        "yanchor": "bottom",
+        "xanchor": "center",
+        "yanchor": "middle",
         "caption": post.caption,
         "likes_count": post.likes_count,
         "link_post": post.link_post,
         "imagetag": post.imagetag,
         "showgrid":false,
-        "layer": "below"
+        "layer": "above"
     };
   }
 
@@ -101,19 +101,34 @@
     x = _.flatMap(dati, function(el) { return el.postcoord.x});
     y = _.flatMap(dati, function(el) { return el.postcoord.y});
 
-    var myPlot = document.getElementById('graph'),
+    var myPlot = document.getElementById('graph');
+
     data = [ { x:x, y:y, type:'scatter',
-            mode:'markers', marker:{size:1, } } ], 
-    img = {
-      images: images
-    },
-    layout = {
+            mode:'markers', marker:{size:1, } } ];
+    
+    var layout = {
+        images: images,
         hovermode:'closest',
-        title:'Click on Points'
+        title:'',
+        showlegend: false,
+        xaxis: {
+          showgrid: false,
+          zeroline: false,
+          showline: false,
+          mirror: 'ticks',
+          showticklabels: false,
+        },
+        yaxis: {
+          showgrid: false,
+          zeroline: false,
+          showline: false,
+          mirror: 'ticks',
+          showticklabels: false,
+        }
      };
 
-    Plotly.newPlot('graph', data, img, layout);
-
+    Plotly.newPlot('graph', data,  layout, {responsive: true, displaylogo: false});
+   
     myPlot.on('plotly_click', function(data){
         var pts = '';
         for(var i=0; i < data.points.length; i++){
