@@ -1,0 +1,217 @@
+{% extends 'sito/base.html' %}
+{% block content %}
+
+<div style="width:100%; clear:both;">
+  <div id="filtri-container">
+    <a href="javascript:toggleFiltri()" class="header" style="width:70px;">FILTERS</a>
+    <div id="filtri" style="display:none;">
+      <div class="form-group">
+        <label for="competitor"class="form-control" >Competitor's comparison</label><br/>
+        <select name="competitor" id="competitor">
+          <option value="">None</option>
+          <option value="175547541|miguelinagambaccini">miguelinagambaccini</option>
+          <option value="8442900|athenaprocopiou">athenaprocopiou</option>
+          <option value="20718070|lisamariefernandez">lisamariefernandez</option>
+          <option value="332000242|heidikleinswim">heidikleinswim</option>
+          <option value="439290000|loupcharmant">loupcharmant</option>
+          <option value="1041017111|zeusndione">zeusndione</option>
+          <option value="2091887150|daftcollectionofficial">daftcollectionofficial</option>
+          <option value="199457675|muzungusisters">muzungusisters</option>
+          <option value="52899088|dodobaror">dodobaror</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <input type="checkbox" class="form-control" id="content_type1" name="content_type1" value="" />
+        <label for="content_type1">AMBIENT</label><br/>
+        <input type="checkbox" class="form-control" id="content_type2" name="content_type2" value="" />
+        <label for="content_type2">FASHION</label><br/>
+        <input type="checkbox" class="form-control" id="content_type3" name="content_type3" value="" />
+        <label for="content_type3">LIFESTYLE</label><br/>
+        <input type="checkbox" class="form-control" id="content_type4" name="content_type4" value="" />
+        <label for="content_type4">OTHER</label>
+      </div>
+      <a href="javascript:filtra();">APPLICA</a>
+    </div>
+  </div>
+</div>
+
+<div style="width:100%;">
+  <div id="graph" style="width:80%;height:600px;float:left;"></div>
+  <div id="data" style="width:18%; padding:1%;float:left;">
+    <div id="caption">Questa DIV visualizza i dati delle varie immagini</div>
+  </div>
+
+</div>
+<div style="width:100%; min-height:100px; clear:both;">
+  <div id="slider"></div>
+
+</div>
+
+<div class="modal"><!-- Place at bottom of page --></div>
+
+
+{% endblock %}
+
+{% block bottom_script %}
+<script src="/static/sito/js/lodash.js"></script>
+<script src="/static/sito/js/plotly-latest.min.js"></script>
+<script src="/static/sito/js/small.js"></script>
+
+<script type="text/javascript">  
+  var maxLike = 1;
+  var minLike = 0;
+  var scalefactor = 1;
+  var competitor = "";
+
+
+  function preparaDati(post) {
+    // TODO: usare url vero delle immagini
+    if (post.username == "emporiosirenuse") {
+      imgPath = "https://instagram.fprg2-1.fna.fbcdn.net/vp/6d6412d64cd6554c729ed4f3a2efeee1/5BE5FC58/t51.2885-15/sh0.08/e35/p640x640/20225677_290026351463456_2771111555054436352_n.jpg";
+    } else {
+      imgPath = "https://scontent-mxp1-1.cdninstagram.com/vp/f8c14c3773c7da823b33ba8776d6327a/5C869EF4/t51.2885-15/sh0.08/e35/s640x640/22352482_296729064142729_3540471211450433536_n.jpg";
+    }
+    return {
+        //"source": imgPath, //"/static/sito/img/samples/sirenuse.jpg", 
+        "source": post.url_img,
+        "xref": "x",
+        "yref": "y",
+        "x": parseFloat(post.postcoord.x), 
+        "y": parseFloat(post.postcoord.y),
+        "sizex": ((parseInt(post.likes_count))/(maxLike-minLike))*scalefactor,
+        "sizey": ((parseInt(post.likes_count))/(maxLike-minLike))*scalefactor,
+        "xanchor": "right",
+        "yanchor": "bottom",
+        "caption": post.caption,
+        "likes_count": post.likes_count,
+        "link_post": post.link_post,
+        "imagetag": post.imagetag,
+        "showgrid":false,
+        "layer": "below"
+    };
+  }
+
+  function disegnaGrafico(dati) {
+    maxLike = _.max(_.flatMap(dati, function(x){ return parseInt(x.likes_count)}));
+    minLike = _.min(_.flatMap(dati, function(x){ return parseInt(x.likes_count)}));
+
+    images = _.flatMap(dati, preparaDati);
+    x = _.flatMap(dati, function(el) { return el.postcoord.x});
+    y = _.flatMap(dati, function(el) { return el.postcoord.y});
+
+    var myPlot = document.getElementById('graph'),
+    data = [ { x:x, y:y, type:'scatter',
+            mode:'markers', marker:{size:1, } } ], 
+    img = {
+      images: images
+    },
+    layout = {
+        hovermode:'closest',
+        title:'Click on Points'
+     };
+
+    Plotly.newPlot('graph', data, img, layout);
+
+    myPlot.on('plotly_click', function(data){
+        var pts = '';
+        for(var i=0; i < data.points.length; i++){
+            var datiImg = _.find(images, { 'x': data.points[i].x, 'y': data.points[i].y });
+            var tag = _.join(_.flatMap(datiImg.imagetag, function(el) { return el.concept}), '<br/>');
+            $('#data').html('<img src="'+datiImg.source+'" style="width:100%;"/><br/><br/>'+datiImg.caption +'<br/><br/>Likes: <strong>'+datiImg.likes_count +
+              '</strong><br><br>Tags:<br/>'+ tag + '<br/><br/>'+
+              '<a href="'+datiImg.link_post+'" target="blank">'+datiImg.link_post+'</a>');
+        } 
+    });
+  }
+
+  function scala(fattore){
+      $body.addClass("loading");
+      scalefactor = fattore;
+      disegnaGrafico(dati);
+      $body.removeClass("loading");
+  }
+
+  function toggleFiltri() {
+    $('#filtri').toggle();
+  }
+
+  // Variabili di configurazione
+  var URL_BASE = "http://localhost:8080";
+  var limit = 10;
+
+
+  function showError() {
+    $body.removeClass("loading");
+    $('#graph').html('<h1 style="text-align:center; font-size:200%; color:red;">Error retrievieng data from the server</h1>');
+
+  }
+  function aggiornaDati() {
+    data = {}
+    $body.addClass("loading");
+
+
+
+    if (competitor != "") {
+      lista = competitor.split("|");
+
+      $.when(
+        $.ajax(
+          { url: URL_BASE + "/posts/2252447111?competitor="+lista[1]+"&limit="+limit,  // TODO: usare url vero
+            context: data
+          }
+        ),
+        $.ajax(
+          { url: URL_BASE + "/posts/"+lista[0]+"?competitor=emporiosirenuse&limit="+limit,  // TODO: usare url vero
+            context: data
+          }
+        )
+      ).then(function (resp1, resp2) {
+          //this callback will be fired once all ajax calls have finished.
+          dati = _.concat(resp1[0], resp2[0]);
+          disegnaGrafico(dati);
+          $body.removeClass("loading");
+      }, function ( req, status, err) {
+        showError();
+      }); 
+    } else {
+      // Recupero i dati dell'emporio
+      $.ajax({
+        url: URL_BASE + "/posts/2252447111?limit="+limit,
+        context: data
+      }).done(function(datiRicevuti) {
+        dati = datiRicevuti;
+        disegnaGrafico(dati);
+        $body.removeClass("loading");
+      }).fail(function() {
+        showError();
+      });
+    }
+  }
+
+  function filtra() {
+    competitor = $('#competitor').val();
+    $('#filtri').toggle();
+    aggiornaDati();
+  }
+
+  $(document).ready(function() {
+    aggiornaDati();
+    //disegnaGrafico(dati);
+
+    $( function() {
+      $( "#slider" ).slider({
+        max: 3,
+        min: 1,
+        change: function( event, ui ) {
+          scala(ui.value)
+        }
+      }
+      );
+    } );
+    
+    
+  });
+         
+  $body = $("body");    
+</script>
+{% endblock %}

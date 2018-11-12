@@ -1,0 +1,84 @@
+header {
+    width: 100%;
+    height: 70px;
+    background: #c6efef;  
+}
+
+div#slider {
+    width: 100px;
+    float: right;
+    margin-right: 40px;
+}
+
+.ui-slider-horizontal {
+    height: .1em;
+}
+
+.ui-slider-horizontal .ui-slider-handle {
+    top: -0.25em;
+    background: #c6efef;
+    height: .5em;
+}
+
+#filtri-container {
+    padding: 10px;
+}
+
+#filtri {
+    position: absolute;
+    top: 110px;
+    left: 10px;
+    background: white;
+    width: 300px;
+    z-index: 100;
+
+}
+a {
+    text-decoration:none;
+}
+
+span.header, a.header {
+    display:block;
+    color: white;
+    padding: 5px;
+    background:#330867;
+}
+div.form-group {
+    padding-top:10px;
+}
+
+div.form-group label {
+
+}
+
+
+/* Start by setting display:none to make this hidden.
+   Then we position it in relation to the viewport window
+   with position:fixed. Width, height, top and left speak
+   for themselves. Background we set to 80% white with
+   our animation centered, and no-repeating */
+.modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('/static/sito/img/waiting.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading .modal {
+    overflow: hidden;   
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modal {
+    display: block;
+}

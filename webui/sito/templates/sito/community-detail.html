@@ -1,0 +1,51 @@
+{% extends 'sito/base.html' %}
+
+
+{% block content %}
+<div style="width:100%;">
+  <div id="graph" style="width:80%;height:600px;float:left;"></div>
+  <div id="data" style="width:18%; padding:1%;float:left;">
+    <div id="caption">Community - Questa DIV visualizza i dati delle varie immagini</div>
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% block bottom_script %}
+<script src="/static/sito/js/lodash.js"></script>
+<script src="/static/sito/js/plotly-latest.min.js"></script>
+<script src="/static/sito/js/small.js"></script>
+
+<script type="text/javascript">  
+var l = 'rgb(255,204,204)';
+var m = 'rgb(255,153,153)';
+var xl = 'rgb(255,102,102)';
+/* var f_size = formula magica; */
+
+var trace1 = {
+  x: [4, 450, 800, 1500, 1300],
+  y: [5, 500, 900, 1700, 800],
+  
+
+  mode: 'markers',
+  marker: {
+    color: [l,m,xl,l, xl],
+    size: [40, 60, 80, 100, 150]
+  }
+};
+
+var data = [trace1];
+
+var layout = {
+  title: 'Bubble Chart Hover Text',
+  showlegend: false,
+  height: 800,
+  width: 800
+};
+
+Plotly.newPlot('graph', data, layout);
+
+
+</script>
+{% endblock %}

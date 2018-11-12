@@ -1,0 +1,10 @@
+**/migrations/0*.py
+*.json
+*.swp
+*.sql*
+*pyc
+*~
+.directory
+MEDIA
+.DS_STORE
+ENV
