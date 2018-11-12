@@ -57,6 +57,28 @@
 <div style="width:100%;">
   <div id="graph" style="width:80%;height:600px;float:left;"></div>
   <div id="data" style="width:18%; padding:1%;float:left;">
+      <div id="accordion">
+          <div class="card">
+            <div class="card-header" id="headingOne">
+              <h5 class="mb-0">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  METRICS
+                </button>
+              </h5>
+            </div>
+            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+              <div class="card-body">
+                  <canvas id="line-chart" width="50" height="50"></canvas>
+              </div>
+              <div class="card-body">
+                  <canvas id="myRadarChart" width="50" height="50"></canvas>
+              </div>
+            </div>
+
+          </div>
+      </div>
+
+
     <div id="caption">Questa DIV visualizza i dati delle varie immagini</div>
   </div>
 
@@ -68,9 +90,6 @@
 
 <div class="modal"><!-- Place at bottom of page --></div>
 
-<div>
-  <canvas id="myRadarChart" width="40" height="40"></canvas>
-</div>
 
 {% endblock %}
 
@@ -78,6 +97,8 @@
 <script src="/static/sito/js/lodash.js"></script>
 <script src="/static/sito/js/plotly-latest.min.js"></script>
 <script src="/static/sito/js/dati.js"></script>
+
+<script src="/static/sito/dati_test/metrics.js"></script>
 
 <script type="text/javascript">  
   var maxLike = 1;
@@ -272,24 +293,30 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
 <script type="text/javascript">
+
+// RADAR CHART
 var ctx = $('#myRadarChart');
 var color = Chart.helpers.color;
 var blue = 'rgb(54, 162, 235)';
 var purple = 'rgb(153, 102, 255)';
-var perca  = 25;
-var percb = 15;
-var dataseta = [20, 70, 50];
-var datasetb = [34, 65, 45];
+
+var ambient = metriche['content']['ambient'];
+var fashion = metriche['content']['fashion'];
+var lifestyle = metriche['content']['lifestyle'];
+var dataseta = [ambient, fashion, lifestyle];
+
+var datasetb = [0.8425622901230876, 0.2530284299796741, 0.038534866878945];
+
 
 data = {
-    labels: ["Landscape\n " + 'Azienda A: ' + dataseta[0] + ' - Azienda B: ' + datasetb[0]  , "Fashion", "Style"],
+    labels: ['ambient', 'fashion', 'lifestyle'],
     datasets: [{
-      label: "Azienda A",
+      label: "Le Sirenuse",
       backgroundColor: color(blue).alpha(0.2).rgbString(),
       borderColor: blue,
       data: dataseta
     }, {
-      label: "Azienda B",
+      label: "Competitor",
       backgroundColor: color(purple).alpha(0.2).rgbString(),
       borderColor: purple,
       data: datasetb
@@ -301,15 +328,20 @@ options = {
     ticks: {
       beginAtZero: true,
       min: 0,
-      max: 80,
-      stepSize: 10
+      max: 1,
+      stepSize: 0.2,
+      display: false
     },
     pointLabels: {
-      fontSize: 40
+      fontSize: 10
     }
   },
   legend: {
-    position: 'left'
+    position: 'bottom'
+  },
+  title: {
+    display: true,
+    text: 'Type of content'
   }
 };
 
@@ -318,6 +350,44 @@ var myChart = new Chart(ctx, {
     data: data,
     options: options
 });
+
+// LINE
+var ctx1 = $('#line-chart');
+var calendar = metriche['dates']
+var likesA = metriche['likes']
+
+var lineDataSets = {
+    labels: calendar,
+    datasets: [{ 
+        data: likesA,
+        label: "Le Sirenuse",
+        borderColor: "#3e95cd",
+        fill: false
+      }, 
+      /*{ 
+        data: likesA,
+        label: "Competitor",
+        borderColor: "#8e5ea2",
+        fill: false
+      }*/
+    ]
+};
+var lineOptions = {
+    title: {
+      display: true,
+      text: 'Engagement Overtime'
+    },
+      legend: {
+      position: 'bottom',
+    },
+}
+var myLineChart = new Chart(ctx1, {
+    type: 'line',
+    data: lineDataSets,
+    options: lineOptions
+});
+
 </script>
+
 
 {% endblock %}
