@@ -21,15 +21,21 @@
         </select>
       </div>
       <div class="form-group">
-        <input type="checkbox" class="form-control" id="content_type1" name="content_type1" value="" />
+        <label for=""class="form-control" >Type of Content</label><br/>
+        <input type="checkbox" class="form-control" id="content_type1" name="content_type" value="AMBIENT" />
         <label for="content_type1">AMBIENT</label><br/>
-        <input type="checkbox" class="form-control" id="content_type2" name="content_type2" value="" />
+        <input type="checkbox" class="form-control" id="content_type2" name="content_type" value="FASHION" />
         <label for="content_type2">FASHION</label><br/>
-        <input type="checkbox" class="form-control" id="content_type3" name="content_type3" value="" />
+        <input type="checkbox" class="form-control" id="content_type3" name="content_type" value="LIFESTYLE" />
         <label for="content_type3">LIFESTYLE</label><br/>
-        <input type="checkbox" class="form-control" id="content_type4" name="content_type4" value="" />
+        <input type="checkbox" class="form-control" id="content_type4" name="content_type" value="OTHER" />
         <label for="content_type4">OTHER</label>
       </div>
+      <div class="form-group">
+        <label for=""class="form-control" >Time Frame</label><br/>
+        <input type="text" class="form-control" id="timeframe" name="timeframe" value="" placeholder="data"/>
+      </div>
+      <br/>
       <a href="javascript:filtra();">APPLICA</a>
     </div>
   </div>
@@ -65,14 +71,7 @@
 
 
   function preparaDati(post) {
-    // TODO: usare url vero delle immagini
-    if (post.username == "emporiosirenuse") {
-      imgPath = "https://instagram.fprg2-1.fna.fbcdn.net/vp/6d6412d64cd6554c729ed4f3a2efeee1/5BE5FC58/t51.2885-15/sh0.08/e35/p640x640/20225677_290026351463456_2771111555054436352_n.jpg";
-    } else {
-      imgPath = "https://scontent-mxp1-1.cdninstagram.com/vp/f8c14c3773c7da823b33ba8776d6327a/5C869EF4/t51.2885-15/sh0.08/e35/s640x640/22352482_296729064142729_3540471211450433536_n.jpg";
-    }
-    return {
-        //"source": imgPath, //"/static/sito/img/samples/sirenuse.jpg", 
+     return {
         "source": post.url_img,
         "xref": "x",
         "yref": "y",
@@ -92,6 +91,9 @@
   }
 
   function disegnaGrafico(dati) {
+
+    // 
+    dati = filtraDati(dati);
     maxLike = _.max(_.flatMap(dati, function(x){ return parseInt(x.likes_count)}));
     minLike = _.min(_.flatMap(dati, function(x){ return parseInt(x.likes_count)}));
 
@@ -124,6 +126,25 @@
     });
   }
 
+  function filtraDati(dati) {
+    var typeOfContent = [];
+
+    $("[name='content_type']:checked").each(function() {
+      typeOfContent.push($(this).val());
+    });
+    if (typeOfContent.length == 0) {
+      return _.without(dati, undefined);
+    } else {
+      datiFiltrati = _.map(dati, function(d) {
+        if (_.includes(typeOfContent, d.main_content)) {
+          console.log(d.id_post);
+          return d
+        }
+      });
+      return _.without(datiFiltrati, undefined);
+    }
+  }
+
   function scala(fattore){
       $body.addClass("loading");
       scalefactor = fattore;
@@ -136,9 +157,9 @@
   }
 
   // Variabili di configurazione
-  var URL_BASE = "http://localhost:8080";
+  var URL_BASE = "http://localhost:8080"; // TODO: usare url vero
+  var ID_SIRENUSE = '2252447111';
   var limit = 10;
-
 
   function showError() {
     $body.removeClass("loading");
@@ -146,23 +167,18 @@
 
   }
   function aggiornaDati() {
-    data = {}
     $body.addClass("loading");
-
-
 
     if (competitor != "") {
       lista = competitor.split("|");
 
       $.when(
         $.ajax(
-          { url: URL_BASE + "/posts/2252447111?competitor="+lista[1]+"&limit="+limit,  // TODO: usare url vero
-            context: data
+          { url: URL_BASE + "/posts/"+ID_SIRENUSE+"?competitor="+lista[1]+"&limit="+limit,
           }
         ),
         $.ajax(
-          { url: URL_BASE + "/posts/"+lista[0]+"?competitor=emporiosirenuse&limit="+limit,  // TODO: usare url vero
-            context: data
+          { url: URL_BASE + "/posts/"+lista[0]+"?competitor=emporiosirenuse&limit="+limit,
           }
         )
       ).then(function (resp1, resp2) {
@@ -176,8 +192,7 @@
     } else {
       // Recupero i dati dell'emporio
       $.ajax({
-        url: URL_BASE + "/posts/2252447111?limit="+limit,
-        context: data
+        url: URL_BASE + "/posts/"+ID_SIRENUSE+"?limit="+limit,
       }).done(function(datiRicevuti) {
         dati = datiRicevuti;
         disegnaGrafico(dati);
