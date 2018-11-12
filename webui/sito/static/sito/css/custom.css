@@ -47,10 +47,8 @@ div.form-group {
     padding-top:10px;
 }
 
-div.form-group label {
+label.title {
     font-weight: 700;
-    padding-bottom: 10px;
-
 }
 
 
