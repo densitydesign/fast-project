@@ -103,6 +103,7 @@
 <script src="/static/sito/js/dati.js"></script>
 
 <script src="/static/sito/dati_test/metrics.js"></script>
+<script src="/static/sito/dati_test/metrics2.js"></script>
 
 <script type="text/javascript">  
   var maxLike = 1;
@@ -310,7 +311,10 @@ var fashion = metriche['content']['fashion'];
 var lifestyle = metriche['content']['lifestyle'];
 var dataseta = [ambient, fashion, lifestyle];
 
-var datasetb = [0.8425622901230876, 0.2530284299796741, 0.038534866878945];
+var ambientB = metricsCompetitor['content']['ambient'];
+var fashionB = metricsCompetitor['content']['fashion'];
+var lifestyleB = metricsCompetitor['content']['lifestyle'];
+var datasetb = [ambientB, fashionB, lifestyleB];
 
 
 data = {
@@ -360,6 +364,7 @@ var myChart = new Chart(ctx, {
 var ctx1 = $('#line-chart');
 var calendar = metriche['dates']
 var likesA = metriche['likes']
+var likesB = metricsCompetitor['likes']
 
 var lineDataSets = {
     labels: calendar,
@@ -369,12 +374,12 @@ var lineDataSets = {
         borderColor: "#3e95cd",
         fill: false
       }, 
-      /*{ 
-        data: likesA,
+      { 
+        data: likesB,
         label: "Competitor",
         borderColor: "#8e5ea2",
         fill: false
-      }*/
+      }
     ]
 };
 var lineOptions = {

@@ -1,4 +1,4 @@
-{
+var metricsCompetitor = {
   "content": {
     "ambient": 0.600342365733681, 
     "fashion": 0.26127400272285484, 
