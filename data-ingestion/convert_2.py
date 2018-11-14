@@ -5,7 +5,7 @@ import json
 import sys
 
 
-def load_data(folder, collection, delimiter=","):
+def load_data(folder, collection, delimiter="\t"):
     file_path = folder + "/" + collection + ".csv"
     with open(file_path, 'rU') as data_file:
         return list(csv.DictReader(data_file, delimiter=delimiter))
@@ -18,7 +18,7 @@ path = '../../csv/'
 # load followers posts NOT in same collection of brands posts
 # for now use a test table post_followers
 output = []
-post_data_list = load_data(path + folder, "post")
+post_data_list = load_data(path + folder, "post_fixed")
 for current_post in post_data_list:
     try:
         id_post = current_post["id_post"]
