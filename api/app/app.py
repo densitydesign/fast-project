@@ -39,7 +39,7 @@ class Post(Resource, PostRequests):
         cursor = mongo.db.post.find(query, {"_id": 0}).limit(args.limit)
         storage = BrandsStorage(mongo.db.brand)
 
-        f = parse_coords(storage.get_name(int(args.competitor)))
+        f = parse_coords(storage.get_name(args.competitor) if (args.competitor) else None)
 
         return jsonify([ f(x) for x in cursor])
 

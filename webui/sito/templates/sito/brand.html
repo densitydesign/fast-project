@@ -1,0 +1,232 @@
+{% extends 'sito/base.html' %}
+{% block content %}
+
+<div style="width:100%; clear:both;">
+  <div id="filtri-container">
+    <a href="javascript:toggleFiltri()" class="header" style="width:70px;">FILTERS</a>
+    <div id="filtri" style="display:none;">
+      <div class="form-group">
+        <label for="competitor"class="form-control" >Competitor's comparison</label><br/>
+        <select name="competitor" id="competitor">
+          <option value="">None</option>
+          <option value="175547541|miguelinagambaccini">miguelinagambaccini</option>
+          <option value="8442900|athenaprocopiou">athenaprocopiou</option>
+          <option value="20718070|lisamariefernandez">lisamariefernandez</option>
+          <option value="332000242|heidikleinswim">heidikleinswim</option>
+          <option value="439290000|loupcharmant">loupcharmant</option>
+          <option value="1041017111|zeusndione">zeusndione</option>
+          <option value="2091887150|daftcollectionofficial">daftcollectionofficial</option>
+          <option value="199457675|muzungusisters">muzungusisters</option>
+          <option value="52899088|dodobaror">dodobaror</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for=""class="form-control" >Type of Content</label><br/>
+        <input type="checkbox" class="form-control" id="content_type1" name="content_type" value="AMBIENT" />
+        <label for="content_type1">AMBIENT</label><br/>
+        <input type="checkbox" class="form-control" id="content_type2" name="content_type" value="FASHION" />
+        <label for="content_type2">FASHION</label><br/>
+        <input type="checkbox" class="form-control" id="content_type3" name="content_type" value="LIFESTYLE" />
+        <label for="content_type3">LIFESTYLE</label><br/>
+        <input type="checkbox" class="form-control" id="content_type4" name="content_type" value="OTHER" />
+        <label for="content_type4">OTHER</label>
+      </div>
+      <div class="form-group">
+        <label for=""class="form-control" >Time Frame</label><br/>
+        <input type="text" class="form-control" id="timeframe" name="timeframe" value="" placeholder="data"/>
+      </div>
+      <br/>
+      <a href="javascript:filtra();">APPLICA</a>
+    </div>
+  </div>
+</div>
+
+<div style="width:100%;">
+  <div id="graph" style="width:80%;height:600px;float:left;"></div>
+  <div id="data" style="width:18%; padding:1%;float:left;">
+    <div id="caption">Questa DIV visualizza i dati delle varie immagini</div>
+  </div>
+
+</div>
+<div style="width:100%; min-height:100px; clear:both;">
+  <div id="slider"></div>
+
+</div>
+
+<div class="modal"><!-- Place at bottom of page --></div>
+
+
+{% endblock %}
+
+{% block bottom_script %}
+<script src="/static/sito/js/lodash.js"></script>
+<script src="/static/sito/js/plotly-latest.min.js"></script>
+<script src="/static/sito/js/small.js"></script>
+
+<script type="text/javascript">  
+  var maxLike = 1;
+  var minLike = 0;
+  var scalefactor = 1;
+  var competitor = "";
+
+
+  function preparaDati(post) {
+     return {
+        "source": post.url_img,
+        "xref": "x",
+        "yref": "y",
+        "x": parseFloat(post.postcoord.x), 
+        "y": parseFloat(post.postcoord.y),
+        "sizex": ((parseInt(post.likes_count))/(maxLike-minLike))*scalefactor,
+        "sizey": ((parseInt(post.likes_count))/(maxLike-minLike))*scalefactor,
+        "xanchor": "right",
+        "yanchor": "bottom",
+        "caption": post.caption,
+        "likes_count": post.likes_count,
+        "link_post": post.link_post,
+        "imagetag": post.imagetag,
+        "showgrid":false,
+        "layer": "below"
+    };
+  }
+
+  function disegnaGrafico(dati) {
+
+    // 
+    dati = filtraDati(dati);
+    maxLike = _.max(_.flatMap(dati, function(x){ return parseInt(x.likes_count)}));
+    minLike = _.min(_.flatMap(dati, function(x){ return parseInt(x.likes_count)}));
+
+    images = _.flatMap(dati, preparaDati);
+    x = _.flatMap(dati, function(el) { return el.postcoord.x});
+    y = _.flatMap(dati, function(el) { return el.postcoord.y});
+
+    var myPlot = document.getElementById('graph'),
+    data = [ { x:x, y:y, type:'scatter',
+            mode:'markers', marker:{size:1, } } ], 
+    img = {
+      images: images
+    },
+    layout = {
+        hovermode:'closest',
+        title:'Click on Points'
+     };
+
+    Plotly.newPlot('graph', data, img, layout);
+
+    myPlot.on('plotly_click', function(data){
+        var pts = '';
+        for(var i=0; i < data.points.length; i++){
+            var datiImg = _.find(images, { 'x': data.points[i].x, 'y': data.points[i].y });
+            var tag = _.join(_.flatMap(datiImg.imagetag, function(el) { return el.concept}), '<br/>');
+            $('#data').html('<img src="'+datiImg.source+'" style="width:100%;"/><br/><br/>'+datiImg.caption +'<br/><br/>Likes: <strong>'+datiImg.likes_count +
+              '</strong><br><br>Tags:<br/>'+ tag + '<br/><br/>'+
+              '<a href="'+datiImg.link_post+'" target="blank">'+datiImg.link_post+'</a>');
+        } 
+    });
+  }
+
+  function filtraDati(dati) {
+    var typeOfContent = [];
+
+    $("[name='content_type']:checked").each(function() {
+      typeOfContent.push($(this).val());
+    });
+    if (typeOfContent.length == 0) {
+      return _.without(dati, undefined);
+    } else {
+      datiFiltrati = _.map(dati, function(d) {
+        if (_.includes(typeOfContent, d.main_content)) {
+          console.log(d.id_post);
+          return d
+        }
+      });
+      return _.without(datiFiltrati, undefined);
+    }
+  }
+
+  function scala(fattore){
+      $body.addClass("loading");
+      scalefactor = fattore;
+      disegnaGrafico(dati);
+      $body.removeClass("loading");
+  }
+
+  function toggleFiltri() {
+    $('#filtri').toggle();
+  }
+
+  // Variabili di configurazione
+  var URL_BASE = "http://localhost:8080"; // TODO: usare url vero
+  var ID_SIRENUSE = '2252447111';
+  var limit = 10;
+
+  function showError() {
+    $body.removeClass("loading");
+    $('#graph').html('<h1 style="text-align:center; font-size:200%; color:red;">Error retrievieng data from the server</h1>');
+
+  }
+  function aggiornaDati() {
+    $body.addClass("loading");
+
+    if (competitor != "") {
+      lista = competitor.split("|");
+
+      $.when(
+        $.ajax(
+          { url: URL_BASE + "/posts/"+ID_SIRENUSE+"?competitor="+lista[1]+"&limit="+limit,
+          }
+        ),
+        $.ajax(
+          { url: URL_BASE + "/posts/"+lista[0]+"?competitor=emporiosirenuse&limit="+limit,
+          }
+        )
+      ).then(function (resp1, resp2) {
+          //this callback will be fired once all ajax calls have finished.
+          dati = _.concat(resp1[0], resp2[0]);
+          disegnaGrafico(dati);
+          $body.removeClass("loading");
+      }, function ( req, status, err) {
+        showError();
+      }); 
+    } else {
+      // Recupero i dati dell'emporio
+      $.ajax({
+        url: URL_BASE + "/posts/"+ID_SIRENUSE+"?limit="+limit,
+      }).done(function(datiRicevuti) {
+        dati = datiRicevuti;
+        disegnaGrafico(dati);
+        $body.removeClass("loading");
+      }).fail(function() {
+        showError();
+      });
+    }
+  }
+
+  function filtra() {
+    competitor = $('#competitor').val();
+    $('#filtri').toggle();
+    aggiornaDati();
+  }
+
+  $(document).ready(function() {
+    aggiornaDati();
+    //disegnaGrafico(dati);
+
+    $( function() {
+      $( "#slider" ).slider({
+        max: 3,
+        min: 1,
+        change: function( event, ui ) {
+          scala(ui.value)
+        }
+      }
+      );
+    } );
+    
+    
+  });
+         
+  $body = $("body");    
+</script>
+{% endblock %}
