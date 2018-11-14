@@ -15,7 +15,8 @@ def load_data(folder, collection, delimiter=","):
 folder = sys.argv[1]
 path = '../../csv/'
 
-# load followers posts in same collection of brands posts
+# load followers posts NOT in same collection of brands posts
+# for now use a test table post_followers
 output = []
 post_data_list = load_data(path + folder, "post")
 for current_post in post_data_list:
@@ -28,7 +29,7 @@ for current_post in post_data_list:
 
 
 # dump output
-OUT_DIR = "../../../json/"
+OUT_DIR = "../../json/"
 if not os.path.exists(OUT_DIR):
     os.makedirs(OUT_DIR)
 with open(OUT_DIR + "post.json", "w") as outfile:
