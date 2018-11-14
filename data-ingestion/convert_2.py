@@ -7,7 +7,7 @@ import sys
 
 def load_data(folder, collection, delimiter=","):
     file_path = folder + "/" + collection + ".csv"
-    with open(file_path) as data_file:
+    with open(file_path, 'rU') as data_file:
         return list(csv.DictReader(data_file, delimiter=delimiter))
 
 
@@ -20,13 +20,15 @@ path = '../../csv/'
 output = []
 post_data_list = load_data(path + folder, "post")
 for current_post in post_data_list:
-    id_post = current_post["id_post"]
+    try:
+        id_post = current_post["id_post"]
 
-    # useless field
-    del current_post["shortcode"]
+        # useless field
+        del current_post["shortcode"]
 
-    output.append(current_post)
-
+        output.append(current_post)
+    except:
+        print ("No id found, skipping!")
 
 # dump output
 OUT_DIR = "../../json/"
