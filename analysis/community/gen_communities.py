@@ -12,7 +12,7 @@ print ('Import data...')
 features = pd.read_csv(path + 'hashtag_network_16.emb', sep=' ',header=None,skiprows=1)
 nodes = pd.read_csv(path + 'hashtag_network_nodes.csv', sep='\t')
 data = nodes.merge(features, left_on='id', right_on=0)
-tags = data[data['type'] == 'tag'].drop(['type',0,'id','content'], axis=1)
+tags = data[data['type'] == 'tag'].drop(['type',0,'id','content'], axis=1).reset_index()
 
 # DBSCAN clustering over tags features
 print ('Computation of DBSCAN clustering on tags features...')
