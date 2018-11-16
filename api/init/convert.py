@@ -21,7 +21,7 @@ def load_content_mapping(filename):
 
 def load_data(folder, collection, delimiter=","):
     file_path = folder + "/" + collection + ".csv"
-    with open(file_path) as data_file:
+    with open(file_path, encoding='utf-8') as data_file:
         return list(csv.DictReader(data_file, delimiter=delimiter))
 
 

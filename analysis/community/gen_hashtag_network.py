@@ -29,7 +29,7 @@ tagnetnodes = pd.DataFrame()
 tagnetedges = pd.DataFrame()
 
 ## USER DATA ##
-outpath = 'data/test-3/'
+outpath = 'network_data/'
 
 users = pd.read_csv(datapath+'user.csv', quotechar='"', escapechar='\\', dtype='object')
 userNodes = users[['id_user', 'username']]
