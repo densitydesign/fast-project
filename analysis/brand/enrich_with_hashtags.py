@@ -5,10 +5,7 @@ from itertools import islice
 def get_hashtags(text):
     return [hashtag.lower() for hashtag in re.findall(r"#(\w+)", text)]
 
-def groupIterable(iterable, batch_size=10000):
-    iterable = iter(iterable)
-    return iter(lambda: list(islice(iterable, batch_size)), [])
-
+from analysis.brand import groupIterable
 from pymongo import MongoClient, UpdateOne
 
 client = MongoClient('mongodb://localhost:27017/')
