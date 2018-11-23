@@ -18,6 +18,24 @@ def dateGroupByKey(field):
 	"day"  : {"$dayOfMonth": field}
     }
 
+
+from copy import deepcopy as copy
+from collections import Mapping
+
+def union(*dicts):
+    def __dict_merge(dct, merge_dct):
+        merged = copy(dct)
+        for k, v in merge_dct.iteritems():
+            if (k in dct and isinstance(dct[k], dict)
+                and isinstance(merge_dct[k], Mapping)):
+                merged[k] = __dict_merge(dct[k], merge_dct[k])
+            else:
+                merged[k] = merge_dct[k]
+        return merged
+
+    return reduce(__dict_merge, dicts)
+
+
 def contentRatio(content):
     return {"$cond": [ {"$gt": ["$TOT", 0]}, {"$divide": [content, "$TOT"] }, 0.0 ]}
     # return { "$divide": [content, "$TOT"] }
@@ -61,8 +79,25 @@ def brand_stats(brand, post_coll, stats_coll):
 			}
 		}]
 
+	hashtags_count = [
+		matchBrand,
+		{"$addFields": {
+			"time": {"$dateFromString": {"dateString": "$taken_at_time"}}
+		}},
+		{"$unwind": "$hashtags"},
+		{"$group":
+			{
+				"_id": union(dateGroupByKey("$time"),{"hashtag": "$hashtags"}),
+			  	"count": {"$sum": 1}
+			}
+		},
+		{"$sort": {"count": -1}},
+	]
+
+
 	posts = pd.DataFrame( list( coll.aggregate(post_count) ) )
 	likes = pd.DataFrame( list( coll.aggregate(likes_count) ) )
+	hashtags = pd.DataFrame( list( coll.aggregate(hashtags_count) ) )
 
 	def get_date(df):
 		return df["_id"].apply(
@@ -71,10 +106,18 @@ def brand_stats(brand, post_coll, stats_coll):
 	posts["date"] = get_date(posts)
 	likes["date"] = get_date(likes)
 
+	hashtags["date"] = get_date(hashtags)
+	hashtags["hashtag"] = hashtags["_id"].apply(lambda x: x["hashtag"])
+
+	hashtags = hashtags.groupby("date")\
+		.apply(lambda x: {row["hashtag"]: row["count"] for _, row in x.iterrows()})\
+		.to_frame("hashtags")
+
 	posts = posts.drop("_id", axis=1).set_index("date", verify_integrity=True)
 	likes = likes.drop("_id", axis=1).set_index("date", verify_integrity=True)
 
-	metrics = pd.concat([posts, likes], axis=1).sort_index().fillna(0)
+
+	metrics = pd.concat([posts, likes, hashtags], axis=1).sort_index().fillna(0)
 
 	metrics["brand"] = brand
 	metrics["_id"] = metrics.apply(convert_to_id, axis=1)

@@ -80,7 +80,7 @@ class Metrics(Resource, MetricsRequests):
 
         cursor = mongo.db.stats.find(query,{"_id": 0})
 
-        return jsonify( aggregate_response( list( cursor ) ) )
+        return jsonify( aggregate_response( list( cursor ), args.window ) )
 
 
 api = Api(app)
