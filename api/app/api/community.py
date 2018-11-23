@@ -49,9 +49,10 @@ class CommunityStorage(object):
             {
                 "_id": 0,
                 "id": 1,
-                "core_hashtags": 1
+                "core_hashtags": 1,
+                "top_posts": 1
             })
-        self.__communities__ = {item["id"]: {"hashtags": item["core_hashtags"], "posts": []} for item in list(cursor)}
+        self.__communities__ = {item["id"]: {"hashtags": item["core_hashtags"], "posts": item["top_posts"]} for item in list(cursor)}
         return self
 
     def get_community(self, id):
@@ -90,20 +91,32 @@ class CommunityGraph(object):
 
         users = list(self.colleciton.find(self.query_thres(thres), self.fields).sort([("num_posts", DESCENDING)]).limit(n))
 
-        nodes = [{"label": "community", "id": community} for community in self.communities]
+        nodes = [{"label": "community", "id": CommunityGraph.community_id(community)} for community in self.communities]
         edges = []
 
         for user in users:
 
             user["label"] = "user"
-            user["id"] = user.pop("id_user")
+            user["id"] = CommunityGraph.user_id( user.pop("id_user") )
 
             communities = user.pop("communities")
 
             for community, score in communities.items():
                 if (community in self.communities) and (score > thres):
-                    edges.append( {"source": user["username"], "target": community, "weight": score} )
+                    edges.append( {
+                        "source": user["id"],
+                        "target": CommunityGraph.community_id(community),
+                        "weight": score} )
 
             nodes.append( user )
 
         return nodes, edges
+
+    @staticmethod
+    def user_id(id):
+        return "u" + str(id)
+
+    @staticmethod
+    def community_id(id):
+        return "c" + str(id)
+
