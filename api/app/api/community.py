@@ -67,7 +67,7 @@ class CommunityStorage(object):
 
 class CommunityGraph(object):
 
-    fields = {"_id": 0, "username": 1, "id_user": 1, "communities": 1, "num_posts": 1}
+    fields = {"_id": 0, "username": 1, "id_user": 1, "communities": 1, "num_posts": 1, "activity": 1}
 
     def __init__(self, collection, communities=[]):
         self.colleciton = collection
