@@ -3,7 +3,7 @@
 
 <div style="width:100%; clear:both;">
   <div id="filtri-container">
-    <a href="javascript:toggleFiltri()" class="header" style="width:70px;">FILTERS</a>
+    <a href="javascript:toggleFiltri()" class="header" style="width:70px; float:left; ">FILTERS</a>
     <div id="filtri" style="display:none;">
       <div class="form-group" class="title">
         <label for="competitor" class="title">Competitor's comparison</label>
@@ -51,37 +51,24 @@
       </div>
       <a href="javascript:filtra();" class="btn btn-primary">APPLICA</a>
     </div>
+    <a href="javascript:toggleMetrics()" class="header" style="width:80px; float: right;">METRICS</a>
+    <div id="metrics" style="display:none;">
+      <div class="card-body">
+            <canvas id="line-chart" width="50" height="50"></canvas>
+      </div>
+      <div class="card-body">
+          <canvas id="myRadarChart" width="50" height="50"></canvas>
+      </div>
+    </div>
   </div>
-</div>
+  
 
 <div style="width:100%;">
-  <div id="graph" style="width:80%;height:600px;float:left;"></div>
-  <div id="data" style="width:18%; padding:1%;float:left;">
-      <div id="accordion">
-          <div class="card">
-            <div class="card-header" id="headingOne">
-              <h5 class="mb-0">
-                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                  METRICS
-                </button>
-              </h5>
-            </div>
-            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
-              <div class="card-body">
-                  <canvas id="line-chart" width="50" height="50"></canvas>
-              </div>
-              <div class="card-body">
-                  <canvas id="myRadarChart" width="50" height="50"></canvas>
-              </div>
-            </div>
-
-          </div>
-      </div>
-
-
+  <div id="graph" style="width:80%; height:600px; float:left;"></div>
+  <div id="data" style="width:18%; padding:1%; float:left;">
     <div id="caption">Questa DIV visualizza i dati delle varie immagini</div>
   </div>
-
+  <div style="clear:both;"></div>
 </div>
 <div style="width:100%; min-height:100px; clear:both;">
   <div style="width:100%; clear:both;">
@@ -113,8 +100,8 @@
 
 
   function preparaDati(post) {
-     return {
-        "source": post.url_img,
+      return {
+        "source": 'http://localhost:8081/img/brands/'+ post.id_post+'.jpg', //post.url_img,
         "xref": "x",
         "yref": "y",
         "x": parseFloat(post.postcoord.x), 
@@ -214,6 +201,9 @@
     $('#filtri').toggle();
   }
 
+  function toggleMetrics() {
+    $('#metrics').toggle();
+  }
   // Variabili di configurazione
   var URL_BASE = "http://localhost:8080"; // TODO: usare url vero
   var ID_SIRENUSE = '2252447111';
@@ -225,12 +215,25 @@
 
   }
   function aggiornaDati() {
-    disegnaGrafico(dati);
-    return;
+    //disegnaGrafico(dati);
+    //return;
     $body.addClass("loading");
   
     if ($('#limit').val() > 0 && $('#limit').val() != '') {
       limit = $('#limit').val();
+    }
+
+    // start=1505742111&end=1508139633
+    var start = '';
+    var end = '';
+    timeframe = $('#timeframe').val();
+    if (timeframe != "") {
+      date = timeframe.split(' - ');
+      var from_date = new Date(date[0]);
+      start = '&start='+from_date.getTime()/1000;
+      var to_date = new Date(date[1]);
+      end = '&end='+to_date.getTime()/1000;
+
     }
 
     if (competitor != "") {
@@ -238,11 +241,11 @@
 
       $.when(
         $.ajax(
-          { url: URL_BASE + "/posts/"+ID_SIRENUSE+"?competitor="+lista[1]+"&limit="+limit,
+          { url: URL_BASE + "/posts/"+ID_SIRENUSE+"?competitor="+lista[0]+start+end+"&limit="+limit,
           }
         ),
         $.ajax(
-          { url: URL_BASE + "/posts/"+lista[0]+"?competitor=emporiosirenuse&limit="+limit,
+          { url: URL_BASE + "/posts/"+lista[0]+"?competitor="+ID_SIRENUSE+start+end+"&limit="+limit,
           }
         )
       ).then(function (resp1, resp2) {
@@ -255,8 +258,9 @@
       }); 
     } else {
       // Recupero i dati dell'emporio
+      url = URL_BASE + "/posts/"+ID_SIRENUSE+"?limit="+limit+start+end;
       $.ajax({
-        url: URL_BASE + "/posts/"+ID_SIRENUSE+"?limit="+limit,
+        url: url,
       }).done(function(datiRicevuti) {
         dati = datiRicevuti;
         disegnaGrafico(dati);
@@ -397,6 +401,25 @@ var myLineChart = new Chart(ctx1, {
     options: lineOptions
 });
 
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<script>
+  $(document).ready(function(){
+    $('#timeframe').daterangepicker({
+      autoUpdateInput: true,
+      startDate: '12/31/2016',
+      endDate: '11/05/2017'
+    });
+    $('#timeframe').val('');
+  });
+  /*
+  startDate (Date or string) The beginning date of the initially selected date range. If you provide a string, it must match the date format string set in your locale setting.
+  endDate: (Date or string) The end date of the initially selected date range.
+  minDate: (Date or string) The earliest date a user may select.
+  maxDate: (Date or string) The latest date a user may select.
+  */
 </script>
 
 

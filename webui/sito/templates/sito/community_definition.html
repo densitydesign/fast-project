@@ -1,0 +1,40 @@
+{% extends 'sito/base.html' %}
+
+
+{% block content %}
+<div style="width:100%;">
+  <div id="community-definition" style="border-radius: 5px; box-shadow: 0 0 16px 0 rgba(0,0,0,0.5); width:50%; margin:auto; margin-top:5%; margin-bottom:5%;">
+    <form action="{% url 'community-definition' %}" method="post">{% csrf_token %}
+      <div style="clear:both; padding:20px;">
+        <button type="submit" style="float:right;" class="btn btn-primary">NEXT</button>
+      </div>
+      {% for c in elenco %}
+        <div class="community">
+          <div class="scelta">
+            <input type="checkbox" name="community_id" value="{{c.id}}" {% if c.id in request.session.community_id %}checked="true"{% endif %}/>
+          </div>
+          <div class="picture-excerpt">
+            <span class="turchese">Picture excerpt</span><br/>
+            {% for i in c.posts %}
+              <div style="background:url('http://localhost:8081/img/followers/{{i}}.jpg'); background-size:cover; width: 100px; height:100px;float:left;margin-right:10px;" ></div>{% endfor %}
+          </div>
+          <div class="hashtag">
+            <span class="turchese">Top hashtags</span><br/>
+            {% for h in c.hashtags%}{{h}}<br/>{% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+      <div style="clear:both; padding:20px;">
+        <button type="submit" style="float:right;" class="btn btn-primary">NEXT</button>
+      </div>
+    </form>
+    <div style="clear:both; padding:10px;"></div>
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% block bottom_script %}
+
+{% endblock %}

@@ -14,7 +14,17 @@
   </head>
   <body>
 <header> 
-    <img src="/static/sito/img/FsST-logo.png" style="height:50px;padding-top:10px;padding-left:10px;" alt="bad">   
+    <img src="/static/sito/img/FsST-logo.png" style="height:50px;padding-top:10px;padding-left:10px;" alt="bad"> 
+    <!-- Rounded switch -->
+    <div style="margin-right:45%; margin-top:14px;float:right;">
+      <form id="change" action="{% url 'change-section' %}" method="post">{% csrf_token %}
+      Brand
+    <label class="switch">
+      <input type="checkbox" id="switch" name="switch" value="community" {% if section == 'community' %}checked{% endif %}>
+      <span class="slider round"></span>
+    </label> Communities  
+  </form>
+  </div>
 </header>
 
 {% block content %}
@@ -24,8 +34,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 <script src="/static/sito/js/jquery-ui.js"></script>
-{% block bottom_script %}
 
+<script>
+  $(document).ready(function () {
+  $('.slider').click(function() {
+    setTimeout(function(){ $('#change').submit(); }, 500);
+    
+  });
+});
+</script>
+{% block bottom_script %}
 
 {% endblock %}
   </body>
