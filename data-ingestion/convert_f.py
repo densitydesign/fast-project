@@ -7,7 +7,7 @@ import sys
 
 def load_data(folder, collection, delimiter="\t"):
     file_path = folder + "/" + collection + ".csv"
-    with open(file_path, 'rU') as data_file:
+    with open(file_path, 'rU', encoding='utf-8') as data_file:
         return list(csv.DictReader(data_file, delimiter=delimiter))
 
 

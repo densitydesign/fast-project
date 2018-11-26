@@ -23,6 +23,28 @@ class Brand(Resource):
         storage = BrandsStorage(mongo.db.brand)
         return jsonify(storage.reload().json)
 
+from api.community import CommunityStorage, CommunityGraph, CommunityGraphRequests
+
+class Community(Resource):
+
+    def get(self):
+        storage = CommunityStorage(mongo.db.community)
+        return jsonify(storage.reload().json)
+
+
+class CommunitiesGraph(Resource, CommunityGraphRequests):
+
+    def get(self):
+        args = self.parse_args()
+
+        nodes, edges = CommunityGraph(mongo.db.user, args.communities).graph(args.limit, args.thres)
+
+        return jsonify({
+            "nodes": nodes,
+            "edges": edges
+        })
+
+
 from api.posts import PostRequests, build_query as post_query, parse_coords
 
 class Post(Resource, PostRequests):
@@ -60,8 +82,11 @@ class Metrics(Resource, MetricsRequests):
 
         return jsonify( aggregate_response( list( cursor ) ) )
 
+
 api = Api(app)
 api.add_resource(Brand, "/brands")
+api.add_resource(Community, "/communities")
+api.add_resource(CommunitiesGraph, "/communities/graph")
 api.add_resource(Post, "/posts/<brand_id>", "/posts/<string:brand_id>")
 api.add_resource(Metrics, "/metrics/<brand_id>", "/metrics/<string:brand_id>")
 
