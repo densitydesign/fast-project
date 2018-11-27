@@ -66,7 +66,7 @@ def aggregate_response(json, window="week"):
         .apply(lambda x: compact(*x.values))
 
     return {
-        "dates": [datetime.fromtimestamp(x).strftime("%Y-%m-%d") for x in df["date"].values],
+        "dates": [datetime.fromtimestamp(x).strftime("%s") for x in df["date"].values],
         "posts": [int(x) for x in df["posts"].values],
         "likes": [int(x) for x in df["likes"].values],
         "hashtags": {int( week ): hs.loc[week].to_dict() for week in hs.index.levels[0]},

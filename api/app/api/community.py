@@ -67,7 +67,8 @@ class CommunityStorage(object):
 
 class CommunityGraph(object):
 
-    fields = {"_id": 0, "username": 1, "id_user": 1, "communities": 1, "num_posts": 1, "activity": 1}
+    fields = {"_id": 0, "username": 1, "id_user": 1, "communities": 1,
+              "num_posts": 1, "activity": 1, "followers_count": 1}
 
     def __init__(self, collection, communities=[]):
         self.colleciton = collection
@@ -87,9 +88,9 @@ class CommunityGraph(object):
                 _ = user["communities"].pop(community)
         return user
 
-    def graph(self, n=10, thres=0):
+    def graph(self, n=10, thres=0, field="num_posts"):
 
-        users = list(self.colleciton.find(self.query_thres(thres), self.fields).sort([("num_posts", DESCENDING)]).limit(n))
+        users = list(self.colleciton.find(self.query_thres(thres), self.fields).sort([(field, DESCENDING)]).limit(n))
 
         nodes = [{"label": "community", "id": CommunityGraph.community_id(community)} for community in self.communities]
         edges = []
@@ -106,7 +107,8 @@ class CommunityGraph(object):
                     edges.append( {
                         "source": user["id"],
                         "target": CommunityGraph.community_id(community),
-                        "weight": score} )
+                        "weight": score
+                    } )
 
             nodes.append( user )
 
