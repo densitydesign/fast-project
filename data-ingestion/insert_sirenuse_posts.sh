@@ -13,7 +13,7 @@ for i in `ls -d ../../csv/*/followers/`; do
         #sed 's/\\\"//g' < $i/post.csv > $i/post_fixed.csv
         
         # if this command does not work, substitute ./ with local path of python 3 installation (e.g.: C:\\Anaconda3\\python)
-        ./convert_f.py $i
+        /home/anaconda2/envs/api_env/bin/python convert_f.py $i
         mongoimport --db FaST --collection post_followers --mode insert --file ../../json/post.json  --jsonArray
         
         rm -rf ../../json
