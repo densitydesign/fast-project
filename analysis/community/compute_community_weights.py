@@ -40,10 +40,10 @@ for i in range(V):
             tagname = t_net.GetStrAttrDatN(tid, 'content')
             taglist.append(tagname)
             
-        usedtags[str(id_post)] = set(taglist)
+        usedtags[id_post] = set(taglist)
         
     elif type == 'user':
-        id_user = t_net.GetStrAttrDatN(nid, 'id')
+        id_user = int(t_net.GetStrAttrDatN(nid, 'id'))
         username = t_net.GetStrAttrDatN(nid, 'content')
         postlist = []
         nodeIt = t_net.GetNI(nid)
@@ -52,7 +52,7 @@ for i in range(V):
             id_post = t_net.GetStrAttrDatN(pid, 'id')
             postlist.append(id_post)
             
-        userposts[username] = set(postlist)
+        userposts[id_user] = set(postlist)
     it.Next()
 
 # compute participation of each post in each cluster 
@@ -106,11 +106,9 @@ for u in userposts.keys():
             
     if not userPart[u]:
         del userPart[u]
-    else:
-        print u, userPart[u]
 
 # update followers user collection with this information
 user_db = mongodb["user"]
 for user in userPart.keys():
-    result = user_db.update_one({'username': user}, {'$set': {'communities': userPart[user]}}, upsert=False)
+    result = user_db.update_one({'id_user': user}, {'$set': {'communities': userPart[user]}}, upsert=False)
     print 'user: ' + str(user) + ' matched ' + str(result.matched_count) + ' ,updated ' + str(result.modified_count)
