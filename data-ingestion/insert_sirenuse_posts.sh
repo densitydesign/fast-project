@@ -20,4 +20,3 @@ for i in `ls -d ../../csv/*/followers/`; do
     fi
 
 done;
-done;
