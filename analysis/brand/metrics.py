@@ -3,6 +3,7 @@ from datetime import datetime
 
 from pymongo import UpdateOne
 
+from analysis.brand import union, dateGroupByKey, get_date
 from analysis import brands, posts_coll, stats_coll
 from bson import ObjectId
 
@@ -10,31 +11,6 @@ def convert_to_id(x):
 	return ObjectId.from_datetime(
 		datetime.fromtimestamp((str(x.name) + x["brand"]).__hash__() % 2147483647)
 	)
-
-def dateGroupByKey(field):
-    return { 
-	"year" : {"$year": field} , 
-	"month": {"$month": field}, 
-	"day"  : {"$dayOfMonth": field}
-    }
-
-
-from copy import deepcopy as copy
-from collections import Mapping
-
-def union(*dicts):
-    def __dict_merge(dct, merge_dct):
-        merged = copy(dct)
-        for k, v in merge_dct.iteritems():
-            if (k in dct and isinstance(dct[k], dict)
-                and isinstance(merge_dct[k], Mapping)):
-                merged[k] = __dict_merge(dct[k], merge_dct[k])
-            else:
-                merged[k] = merge_dct[k]
-        return merged
-
-    return reduce(__dict_merge, dicts)
-
 
 def contentRatio(content):
     return {"$cond": [ {"$gt": ["$TOT", 0]}, {"$divide": [content, "$TOT"] }, 0.0 ]}
@@ -98,10 +74,6 @@ def brand_stats(brand, post_coll, stats_coll):
 	posts = pd.DataFrame( list( coll.aggregate(post_count) ) )
 	likes = pd.DataFrame( list( coll.aggregate(likes_count) ) )
 	hashtags = pd.DataFrame( list( coll.aggregate(hashtags_count) ) )
-
-	def get_date(df):
-		return df["_id"].apply(
-			lambda x: int(datetime.strptime("%04d%02d%02d" % (x["year"], x["month"],x["day"]), "%Y%m%d").strftime("%s") ) )
 
 	posts["date"] = get_date(posts)
 	likes["date"] = get_date(likes)
