@@ -23,6 +23,28 @@ class CommunityGraphRequests(object):
 
 
 
+class CommunityMetricsRequests(object):
+
+    parser = RequestParser()
+
+    DEFAULT_LIMIT=10
+    DEFAULT_QUERY=100
+
+    parser.add_argument('start', type=int)
+    parser.add_argument('end', type=int)
+    parser.add_argument('limit', type=int)
+    parser.add_argument('complexity', type=int)
+
+    def parse_args(self):
+        args = self.parser.parse_args()
+
+        args.limit = args.limit if args.limit is not None else self.DEFAULT_LIMIT
+        args.complexity = args.complexity if args.complexity is not None else self.DEFAULT_QUERY
+
+        return args
+
+
+
 class CommunityStorage(object):
 
     def __init__(self, collection):
@@ -121,4 +143,101 @@ class CommunityGraph(object):
     @staticmethod
     def community_id(id):
         return "c" + str(id)
+
+import numpy as np
+import pandas as pd
+from itertools import groupby
+
+from collections import Counter
+
+class CommunityMetrics(object):
+
+    def __init__(self, collection):
+        self.collection = collection
+        self.start = None
+        self.end = None
+
+    def set_start(self, value):
+        if isinstance(value, str):
+            self.start = int( pd.to_datetime(value).strftime("%s") )
+        elif isinstance(value, int):
+            self.start = value
+        else:
+            raise ValueError
+        return self
+
+    def set_end(self, value):
+        if isinstance(value, str):
+            self.end = int( pd.to_datetime(value).strftime("%s") )
+        elif isinstance(value, int):
+            self.end = value
+        else:
+            raise ValueError
+        return self
+
+    def build_query(self, query=None):
+
+        query = query if query is not None else {}
+
+        time_query = {}
+        if (self.start):
+            time_query["$gte"] = self.start
+        if (self.end):
+            time_query["$lte"] = self.end
+        if len(time_query) > 0:
+            query["date"] = time_query
+
+        return query
+
+    @staticmethod
+    def reduce(counters, elem):
+        return {key: np.sum([x[1] for x in list(group)]) for key, group in
+             groupby(sorted(counters.items() + elem.items()), key=lambda x: x[0])}
+
+
+    def get_entities(self, community, type="hashtags", brand=None, top=None, filter_size=100):
+
+        query = self.build_query(
+            {} if brand is None else {"brand": brand}
+        )
+
+        # return sorted( reduce(
+        #     CommunityMetrics.reduce,
+        #     [ doc["communities"][community]["hashtags"]
+        #       for doc in self.collection.find( query )
+        #       if "communities" in doc.keys()
+        #       if community in doc["communities"].keys()],
+        #     {}
+        # ).items(), key=lambda x: x[1], reverse=True)[:top]
+        #
+        return reduce(lambda x, y: Counter(dict((x + y).most_common(filter_size))),
+                      [Counter(doc["communities"][community][type])
+                       for doc in self.collection.find(query)
+                       if "communities" in doc.keys()
+                       if community in doc["communities"].keys()]   ,
+                      Counter()
+        ).most_common(top)
+
+    def hashtags(self, community, brand=None, top=None, filter_size=100):
+        return self.get_entities(community, "hashtags", brand, top, filter_size)
+
+    def mentions(self, community, brand=None, top=None, filter_size=100):
+        return self.get_entities(community, "mentions", brand, top, filter_size)
+
+    def size(self, brand=None):
+
+        query = self.build_query(
+            {} if brand is None else {"brand": brand}
+        )
+
+        return reduce(
+            lambda x, y: x+y,
+            [doc["community_size"] for doc in self.collection.find(query)
+             if "community_size" in doc.keys()
+             ],
+            0
+        )
+
+
+
 
