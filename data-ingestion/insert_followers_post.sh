@@ -6,7 +6,7 @@ for i in `ls -d ../../csv/*/followers/`; do
     then
         echo "Converting $i..."
         #sed 's/\\\"//g' < $i/post.csv > $i/post_fixed.csv
-        mongoimport --db FaST --collection post_followers --type csv --mode insert --headerline --file $i/post_fixed.csv
+        mongoimport --db FaST --collection post_followers --type csv --mode insert --headerline --columnsHaveTypes  --parseGrace autoCast --file $i/post_fixed.csv
     fi
 
 done;
