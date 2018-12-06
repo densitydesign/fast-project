@@ -75,7 +75,7 @@ class CommunitiesMetrics(CommunityMetricsRequests):
 
         size = metrics.size(brand=brand_name)
 
-        return {"posts": size, "hashtags": dict(entities)}
+        return {"posts": size, self.type: dict(entities)}
 
 class CommunitiesHashtags(Resource, CommunitiesMetrics):
 
