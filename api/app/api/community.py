@@ -1,6 +1,8 @@
 from pymongo import DESCENDING
 from flask_restful.reqparse import RequestParser
 
+from functools import reduce
+
 class CommunityGraphRequests(object):
 
     parser = RequestParser()
