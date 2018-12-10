@@ -1,6 +1,8 @@
 from copy import deepcopy as copy
 from collections import Mapping
 
+from functools import reduce
+
 from datetime import datetime
 from itertools import islice
 
@@ -25,7 +27,7 @@ def get_date(df):
 def union(*dicts):
     def __dict_merge(dct, merge_dct):
         merged = copy(dct)
-        for k, v in merge_dct.iteritems():
+        for k, v in merge_dct.items():
             if (k in dct and isinstance(dct[k], dict)
                 and isinstance(merge_dct[k], Mapping)):
                 merged[k] = __dict_merge(dct[k], merge_dct[k])
