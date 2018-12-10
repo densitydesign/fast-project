@@ -16,10 +16,13 @@ clusters = {doc["id"]: doc["core_hashtags"][:n] for doc in db.community.find()}
 def filterNones(list):
     return [element for element in list if (element)]
 
-def getBrandPipeline(brand_id, limit=None):
+def getBrandPipeline(brand_id, limit=None, start=None, end=None):
     return filterNones([{
         "$project": {"username": 1, "owner": 1, "hashtags": 1, "timestamp": 1, "mentions": 1},
-    }, {
+    },
+    { "$match": {"timestamp": {"$gte": pd.to_datetime(start)}}} if start is not None else start,
+    { "$match": {"timestamp": {"$lt": pd.to_datetime(end)}}} if end is not None else end,
+    {
         "$match": { "$and": [{"hashtags": {"$exists": True}},
                              {"mentions": {"$exists": True}},
                              {"timestamp": {"$exists": True}}]}
@@ -84,12 +87,15 @@ def getBrandPipeline(brand_id, limit=None):
 ])
 
 
-def getCommunitySizes():
+def getCommunitySizes(start=None, end=None):
     return filterNones([{
         "$project": {"username": 1, "owner": 1, "timestamp": 1},
     }, {
         "$match": { "timestamp": {"$exists": True} }
-    }, {
+    },
+    {"$match": {"timestamp": {"$gte": pd.to_datetime(start)}}} if start is not None else start,
+    {"$match": {"timestamp": {"$lt": pd.to_datetime(end)}}} if end is not None else end,
+    {
         "$lookup":
             {
                 "from": "user",
@@ -110,10 +116,22 @@ def getCommunitySizes():
 
 from analysis import brands
 
+import argparse
+
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--start', type=str, default=None)
+parser.add_argument('--end', type=str, default=None)
+parser.add_argument('--limit', type=int, default=None)
+
+args = parser.parse_args(namespace=None)
+
+
 brands_id = { b["username"]: b["id_user"] for b in db.brand.find({}) }
 id_brands = { v: k for k, v in brands_id.items() }
 
-sizes = pd.DataFrame( list(c.aggregate(getCommunitySizes())) )
+sizes = pd.DataFrame( list(c.aggregate(getCommunitySizes(args.start, args.end))) )
 sizes["date"] = get_date(sizes)
 sizes["community"] = sizes["_id"].apply(lambda x: id_brands[x["community"]])
 cnt = sizes.set_index(["date", "community"])["count"]
@@ -124,7 +142,7 @@ for brand in brands:
 
     print("Processing brand: %s (%d)" % (brand, id))
 
-    pipe = getBrandPipeline(id)
+    pipe = getBrandPipeline(id, limit=args.limit, start=args.start, end=args.end)
 
     df = pd.DataFrame( list( c.aggregate(pipe) ) )
 
