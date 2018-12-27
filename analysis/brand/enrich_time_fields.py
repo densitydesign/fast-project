@@ -1,37 +1,58 @@
 #!/usr/bin/env python
-import re
 from datetime import datetime
-from itertools import islice
+
+from brand import groupIterable
+from pymongo import UpdateOne
+
+from brand.parsers import parse_arguments_with, add_data_arguments, add_logging_arguments, setup_logger, get_data
 
 def get_time(timestamp):
     return datetime.fromtimestamp(int(float(timestamp)))
 
-from analysis.brand import groupIterable
-from pymongo import MongoClient, UpdateOne
 
-client = MongoClient('mongodb://localhost:27017/')
-db = client['FaST']
+def custom_parser(parser):
 
-post_coll = db["post_followers"]
+    parser.add_argument('--collection',
+                        default="followers",
+                        choices=["followers", "posts"],
+                        help="Which collection to enrich")
 
-batch_size=10000
+    parser.add_argument('--batch-size',
+                        default=10000,
+                        type=int,
+                        help="Batch size to be used when performing bulk enrich")
 
-cursor = post_coll.find({"timestamp": {"$exists": False}}, {"taken_at_timestamp": 1})
+    return parser
 
-for ibatch, posts in enumerate(groupIterable(cursor, batch_size)):
 
-    print("Batch %d: Processing %d posts" % (ibatch, len(posts)))
+if __name__ == "__main__":
 
-    documents = []
-    for post in posts:
-        try:
-            documents.append(UpdateOne(
-                {'_id': post["_id"]},
-                {"$set": {"timestamp": get_time(post["taken_at_timestamp"])}}
-            ))
-        except Exception as e:
-            print("Error for post id %s" % post["_id"])
-            print("Exception: %s" % e.message)
+    args = parse_arguments_with([add_data_arguments, add_logging_arguments, custom_parser])
 
-    if (len(documents)>0):
-        post_coll.bulk_write(documents)
+    logger = setup_logger(args)
+
+    data = get_data(args)
+
+    collection = data[args.collection]
+
+    batch_size = args.batch_size
+
+    cursor = collection.find({"timestamp": {"$exists": False}}, {"taken_at_timestamp": 1})
+
+    for ibatch, posts in enumerate(groupIterable(cursor, batch_size)):
+
+        logger.info("Batch %d: Processing %d posts" % (ibatch, len(posts)))
+
+        documents = []
+        for post in posts:
+            try:
+                documents.append(UpdateOne(
+                    {'_id': post["_id"]},
+                    {"$set": {"timestamp": get_time(post["taken_at_timestamp"])}}
+                ))
+            except Exception as e:
+                logger.error("Error for post id %s" % post["_id"])
+                logger.error("Exception: %s" % e.message)
+
+        if (len(documents)>0):
+            collection.bulk_write(documents)

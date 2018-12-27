@@ -1,6 +1,25 @@
 #!/usr/bin/env python
-import re
-from itertools import islice
+
+import pandas as pd
+
+from datetime import datetime
+
+from pymongo import UpdateOne
+
+from brand import groupIterable
+
+from brand.parsers import get_data, add_logging_arguments, add_data_arguments, parse_arguments_with, setup_logger
+from bson.code import Code
+
+def custom_parser(parser):
+
+    parser.add_argument('--batch-size',
+                        default=1000,
+                        type=int,
+                        help="Batch size to be used when performing bulk enrich")
+
+    return parser
+
 
 
 activity_query = [
@@ -22,8 +41,6 @@ activity_query = [
             }
     }]
 
-
-from bson.code import Code
 
 map_f = Code("""function () {
     var date = parseInt(this.taken_at_timestamp);
@@ -47,24 +64,6 @@ reduce_f = Code("""function(k,values) {
     return reduced
 }""")
 
-
-
-
-import pandas as pd
-from pymongo import MongoClient, UpdateOne
-
-client = MongoClient('mongodb://localhost:27017/')
-db = client['FaST']
-
-posts = db["post_followers"]
-users = db["user"]
-
-tmp_coll = "myresults"
-
-posts.map_reduce(map_f, reduce_f, tmp_coll)
-
-from datetime import datetime
-
 def flatten(post):
     return {
         "_id": post["_id"],
@@ -73,30 +72,43 @@ def flatten(post):
         "last": datetime.fromtimestamp(post["value"]["max"])
     }
 
-activities = pd.DataFrame( [flatten(post) for post in db[tmp_coll].find()] ).set_index("_id")
 
-db[tmp_coll].drop()
+if __name__ == "__main__":
 
-activities["activity"] = (activities["last"] - activities["first"]).apply(lambda x: x.days) / activities["count"]
+    args = parse_arguments_with([add_data_arguments, add_logging_arguments, custom_parser])
 
-batch_size=1000
+    logger = setup_logger(args)
 
-from analysis.brand import groupIterable
+    data = get_data(args)
 
-for ibatch, _users in enumerate(groupIterable(activities.iterrows(), batch_size)):
+    posts = data["followers"]
+    users = data["users"]
 
-    # text = post["caption"]
-    # hashtags = [hashtag.lower() for hashtag in get_hashtags(text)]
+    db = data["db"]
 
-    print("Batch %d: Processing %d users" % (ibatch, len(_users)))
+    tmp_coll = "myresults"
 
-    users.bulk_write(
-        [UpdateOne({'username': user}, {"$set": {
-            "activity": row["activity"],
-            "first_post": row["first"],
-            "last_post": row["last"]
-        }}) for (user, row) in _users]
-    )
+    posts.map_reduce(map_f, reduce_f, tmp_coll)
+
+    activities = pd.DataFrame( [flatten(post) for post in db[tmp_coll].find()] ).set_index("_id")
+
+    db[tmp_coll].drop()
+
+    activities["activity"] = (activities["last"] - activities["first"]).apply(lambda x: x.days) / activities["count"]
+
+    batch_size = args.batch_size
+
+    for ibatch, _users in enumerate(groupIterable(activities.iterrows(), batch_size)):
+
+        logger.info("Batch %d: Processing %d users" % (ibatch, len(_users)))
+
+        users.bulk_write(
+            [UpdateOne({'username': user}, {"$set": {
+                "activity": row["activity"],
+                "first_post": row["first"],
+                "last_post": row["last"]
+            }}) for (user, row) in _users]
+        )
 
 
 

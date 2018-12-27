@@ -1,13 +1,9 @@
 import pandas as pd
 import numpy as np
 from sklearn.manifold import TSNE
-from pymongo import MongoClient
 
-from analysis import datapath, brands
-
-L_RATE = 50 # parameter to tune in order to have a better distribution of data points
-			# too high value: "ball effect"
-			# too low value: too much overlap between points
+from settings import datapath, brands
+from brand.parsers import get_data, add_logging_arguments, add_data_arguments, parse_arguments_with, setup_logger
 
 def manipulateVector(v):
 	outVector = []
@@ -18,12 +14,12 @@ def manipulateVector(v):
     
 	return np.array(outVector)
 
-def perform_tsne(input):
+def perform_tsne(input, learning_rate):
 	N = input.shape[0]
 
 	X1 = np.concatenate(input['X']).reshape([N, 1024])
 
-	X_embedded = TSNE(n_components=2, learning_rate=L_RATE).fit_transform(X1)
+	X_embedded = TSNE(n_components=2, learning_rate=learning_rate).fit_transform(X1)
 
 	tsne_out = pd.DataFrame(X_embedded)
 	tsne_out.columns = ['x', 'y']
@@ -31,7 +27,7 @@ def perform_tsne(input):
 	return tsne_out[['id_post', 'x', 'y']].set_index("id_post")
 
 
-def pair_coordinates(target_b_data, competitors):
+def pair_coordinates(target_b_data, competitors, learning_rate):
 	dict_coord = {}
 
 	for c in competitors:
@@ -41,19 +37,19 @@ def pair_coordinates(target_b_data, competitors):
 		input['X'] = input['vector'].apply(lambda x: manipulateVector(x))
 		input = input.reset_index()
 
-		db_data = perform_tsne(input).loc[target_b_data["id_post"].values]
+		db_data = perform_tsne(input, learning_rate).loc[target_b_data["id_post"].values]
 
 		dict_coord[c] = {pid: row.to_dict() for pid, row in db_data.iterrows()}
 
 	return pd.DataFrame(dict_coord).T.to_dict()
 	
-def single_coordinates(data):
+def single_coordinates(data, learning_rate):
 
 	input = data.copy(deep=True)
 	input['X'] = input['vector'].apply(lambda x: manipulateVector(x))
 	input = input.reset_index()
 
-	return {pid: {"base": row.to_dict()} for pid, row in perform_tsne(input).iterrows()}
+	return {pid: {"base": row.to_dict()} for pid, row in perform_tsne(input, learning_rate).iterrows()}
 
 
 def generate_tuples(brands):
@@ -61,32 +57,50 @@ def generate_tuples(brands):
 		yield (brand, set(brands).difference([brand]) )
 
 
-client = MongoClient('mongodb://localhost:27017/')
-db = client['FaST']
+def custom_parser(parser):
+	parser.add_argument('--learning-rate',
+                        default=50,
+                        help="""
+                        parameter to tune in order to have a better distribution of data points; 
+                        too high value: "ball effect"
+                        too low value: too much overlap between pointsWhich collection to enrich
+                        """)
+	return parser
 
-for target_b, competitors in generate_tuples(brands):
+if __name__ == "__main__":
+	args = parse_arguments_with([add_data_arguments, add_logging_arguments, custom_parser])
 
-	print("Execution for brand: %s" % target_b)
+	logger = setup_logger(args)
 
-	target_b_data = pd.read_csv('{}/{}/imagevector.tsv'.format(datapath, target_b), sep='\t', dtype=object)
+	data = get_data(args)
 
-	# TSNE coordinates computation
-	print("Single coordinates computing...")
-	single_dict = single_coordinates(target_b_data)
+	collection = data["posts"]
 
-	print("Pair coordinates computing...")
-	pair_dict = pair_coordinates(target_b_data=target_b_data, competitors=competitors)
+	L_RATE = args.learning_rate
 
-	print("DB updates of %d documents" % len(pair_dict))
-	# DB updates
-	for pid in pair_dict.keys():
-		coords = {}
-		coords.update(pair_dict[pid])
-		coords.update(single_dict[pid])
-		#print coords
+	for target_b, competitors in generate_tuples(brands):
 
-		db.post.update_one({'id_post': pid},
-						   {'$unset': {'postcoord': ""},
-							'$set': {'pair_coord': coords}},
-						   upsert=False)
+		print("Execution for brand: %s" % target_b)
+
+		target_b_data = pd.read_csv('{}/{}/imagevector.tsv'.format(datapath, target_b), sep='\t', dtype=object)
+
+		# TSNE coordinates computation
+		print("Single coordinates computing...")
+		single_dict = single_coordinates(target_b_data, learning_rate=L_RATE)
+
+		print("Pair coordinates computing...")
+		pair_dict = pair_coordinates(target_b_data=target_b_data, competitors=competitors, learning_rate=L_RATE)
+
+		print("DB updates of %d documents" % len(pair_dict))
+		# DB updates
+		for pid in pair_dict.keys():
+			coords = {}
+			coords.update(pair_dict[pid])
+			coords.update(single_dict[pid])
+			#print coords
+
+			collection.update_one({'id_post': pid},
+								  {'$unset': {'postcoord': ""},
+								   '$set': {'pair_coord': coords}},
+								  upsert=False)
 
