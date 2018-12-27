@@ -39,6 +39,8 @@ if __name__ == "__main__":
 
     cursor = collection.find({"timestamp": {"$exists": False}}, {"taken_at_timestamp": 1})
 
+    processed = 0
+
     for ibatch, posts in enumerate(groupIterable(cursor, batch_size)):
 
         logger.info("Batch %d: Processing %d posts" % (ibatch, len(posts)))
@@ -55,4 +57,7 @@ if __name__ == "__main__":
                 logger.error("Exception: %s" % e.message)
 
         if (len(documents)>0):
+            processed += len(documents)
             collection.bulk_write(documents)
+
+    logger.info("Total documents processed: %d" % processed)

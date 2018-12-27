@@ -72,7 +72,7 @@ def setup_logger(args):
     if args.log_conf is not None:
         configFromFile(args.log_conf)
 
-    return getLogger("imi")
+    return getLogger("brand")
 
 
 def get_data(args):

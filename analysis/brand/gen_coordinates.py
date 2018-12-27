@@ -80,24 +80,23 @@ if __name__ == "__main__":
 
 	for target_b, competitors in generate_tuples(brands):
 
-		print("Execution for brand: %s" % target_b)
+		logger.info("Execution for brand: %s" % target_b)
 
 		target_b_data = pd.read_csv('{}/{}/imagevector.tsv'.format(datapath, target_b), sep='\t', dtype=object)
 
 		# TSNE coordinates computation
-		print("Single coordinates computing...")
+		logger.debug("Single coordinates computing...")
 		single_dict = single_coordinates(target_b_data, learning_rate=L_RATE)
 
-		print("Pair coordinates computing...")
+		logger.debug("Pair coordinates computing...")
 		pair_dict = pair_coordinates(target_b_data=target_b_data, competitors=competitors, learning_rate=L_RATE)
 
-		print("DB updates of %d documents" % len(pair_dict))
+		logger.info("DB updates of %d documents" % len(pair_dict))
 		# DB updates
 		for pid in pair_dict.keys():
 			coords = {}
 			coords.update(pair_dict[pid])
 			coords.update(single_dict[pid])
-			#print coords
 
 			collection.update_one({'id_post': pid},
 								  {'$unset': {'postcoord': ""},

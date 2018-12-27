@@ -110,5 +110,8 @@ if __name__ == "__main__":
             }}) for (user, row) in _users]
         )
 
+    logger.info("Total users processed: %d" % activities.shape[0])
+
+
 
 

@@ -41,6 +41,8 @@ if __name__ == "__main__":
     cursor = collection.find({"$or": [{"hashtags": {"$exists": False}}, {"mentions": {"$exists": False}}]}, {"caption": 1})
     # cursor = post_coll.find({}, {"caption": 1})
 
+    processed = 0
+
     for ibatch, posts in enumerate(groupIterable(cursor, batch_size)):
 
         # text = post["caption"]
@@ -60,6 +62,9 @@ if __name__ == "__main__":
                 logger.error("Exception: %s" % e.message)
 
         if len(documents)>0:
+            processed += len(documents)
             collection.bulk_write(documents)
+
+    logger.info("Total documents processed: %d" % processed)
 
 

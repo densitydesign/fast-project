@@ -24,7 +24,7 @@ loggers:
       level: 'INFO'
       propagate: True
 
-  "analysis":
+  "brand":
       handlers: ['console_out', 'console_err']
       level: 'DEBUG'
       propagate: False

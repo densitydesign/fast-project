@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
         id = brands_id[brand]
 
-        print("Processing brand: %s (%d)" % (brand, id))
+        logger.info("Processing brand: %s (%d)" % (brand, id))
 
         pipe = getBrandPipeline(id, clusters, limit=args.limit, start=args.start, end=args.end)
 

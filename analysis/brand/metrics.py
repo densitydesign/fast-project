@@ -125,6 +125,6 @@ if __name__ == "__main__":
 
 	for brand in brands:
 
-		print("Writing of brand %s" % brand)
-		print( brand_stats(brand, post_coll=posts_coll, stats_coll=stats_coll).bulk_api_result)
+		logger.info("Writing of brand %s" % brand)
+		logger.info( brand_stats(brand, post_coll=posts_coll, stats_coll=stats_coll).bulk_api_result)
 
