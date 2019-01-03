@@ -2,50 +2,153 @@
 
 
 {% block content %}
-<div style="width:100%;">
-  <div id="graph" style="width:80%;height:600px;float:left;"></div>
-  <div id="data" style="width:18%; padding:1%;float:left;">
-    <a href="{% url 'community' %}">BACK</a>
-  </div>
+<div style="width:100%; clear:both;">
+  <div id="filtri-container">
+    <a href="javascript:toggleFiltri()" class="header" style="width:70px; float:left; ">FILTERS</a>
+    <a href="{% url 'community-detail' id_community 'influencers' %}">Influencers</a> - 
+    <a href="{% url 'community-detail' id_community 'hashtags' %}">Hashtags</a> - 
+    <a href="{% url 'community-detail' id_community 'mentions' %}">Mentions</a>
 
+    <a href="{% url 'community' %}"  class="header" style="float:right;">BACK</a>
 </div>
+
+<div style="width:100%;">
+  <div class="chart-example" id="graph" style="width:80%; height:600px; float:left;"></div>
+</div>
+
+
+
 {% endblock %}
 
 
 {% block bottom_script %}
-<script src="/static/sito/js/lodash.js"></script>
-<script src="/static/sito/js/plotly-latest.min.js"></script>
-<script src="/static/sito/js/small.js"></script>
+<script src="/static/sito/js/d3.min.js"></script>
+<script>
+  $(document).ready( function() {
 
-<script type="text/javascript">  
-var l = 'rgb(255,204,204)';
-var m = 'rgb(255,153,153)';
-var xl = 'rgb(255,102,102)';
-/* var f_size = formula magica; */
+    (function() {
+ 
+  // D3 Bubble Chart 
 
-var trace1 = {
-  x: [4, 450, 800, 1500, 1300],
-  y: [5, 500, 900, 1700, 800],
+  var diameter = $('#graph').width();
+
+  var div = d3.select("body").append("div") 
+    .attr("class", "tooltip")       
+    .style("opacity", 0);
+
+
+  var svg = d3.select('#graph').append('svg')
+          .attr('width', diameter)
+          .attr('height', diameter);
+
+  var bubble = d3.layout.pack()
+        .size([diameter, diameter])
+        .value(function(d) {return d.size;})
+         .sort(function(a, b) {
+          return 
+         }) 
+        .padding(0);
   
 
-  mode: 'markers',
-  marker: {
-    color: [l,m,xl,l, xl],
-    size: [40, 60, 80, 100, 150]
+  // generate data with calculated layout values
+  var nodes = bubble.nodes(processData())
+            .filter(function(d) { return !d.children; }); // filter out the outer bubble
+ 
+  var vis = svg.selectAll('circle')
+          .data(nodes);
+  
+  vis.enter().append('circle')
+      .attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')'; })
+      .attr('r', function(d) { return d.r; })
+      .attr('class', function(d) { return d.className; })
+      .on("mouseover", function(d) {  
+            div.transition()    
+                .duration(200)    
+                .style("opacity", .9);    
+            div .html({% if tipo == 'hashtags' %}'#'+{% elif tipo == 'mentions'%}'@'+{%endif%}d.name +' - '+ d.size)  
+                .style("left", (d3.event.pageX) + "px")   
+                .style("top", (d3.event.pageY - 28) + "px");  
+            })          
+        .on("mouseout", function(d) {   
+            div.transition()    
+                .duration(500)    
+                .style("opacity", 0); 
+        })
+
+      ;
+  
+  function processData() {
+    var newDataSet = [{% for d in data %}
+      {name: "{{d.title}}", className: "{{d.class}}", size: "{{d.size}}"}{% if not forloop.last%},{% endif %}
+    {% endfor %}];
+  
+    return {children: newDataSet};
   }
-};
+  
+})();
+    
+});
 
-var data = [trace1];
-
-var layout = {
-  title: 'Bubble Chart Hover Text',
-  showlegend: false,
-  height: 800,
-  width: 800
-};
-
-Plotly.newPlot('graph', data, layout);
+  var URL_BASE = "http://localhost:8080"; // TODO: usare url vero
+  var ID_SIRENUSE = '2252447111';
+  var limit = 10;
 
 
+  function filtra() {
+    competitor = $('#competitor').val();
+    $('#filtri').toggle();
+    start = ''
+    end = ''
+    timeframe = $('#timeframe').val();
+    if (timeframe != "") {
+      date = timeframe.split(' - ');
+      var from_date = new Date(date[0]);
+      start = from_date.getTime()/1000;
+      var to_date = new Date(date[1]);
+      end = to_date.getTime()/1000;
+
+    }
+    data = {
+      'brand': ID_SIRENUSE,
+      'competitor': competitor,
+      'timeframe': timeframe,
+      'start': start,
+      'end': end,
+      'limit': $('#limit').val(),
+      'complexity': $('#complexity').val()
+    }
+    $.post({ 
+        url: '{% url 'imposta-filtri' %}',
+        data: data
+    }).done(function(data) {
+      location.reload();
+    }).fail(function() {
+      showError();
+    });
+  }
+
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<script>
+  $(document).ready(function(){
+    $('#timeframe').daterangepicker({
+      autoUpdateInput: true,
+      {% if request.session.timeframe %}
+      start: '{{start_day}}',
+      end: '{{end_day}}',
+      {% endif %}
+      startDate: '12/31/2016',
+      endDate: '11/05/2017'
+    });
+    $('#timeframe').val('');
+  });
+  /*
+  startDate (Date or string) The beginning date of the initially selected date range. If you provide a string, it must match the date format string set in your locale setting.
+  endDate: (Date or string) The end date of the initially selected date range.
+  minDate: (Date or string) The earliest date a user may select.
+  maxDate: (Date or string) The latest date a user may select.
+  */
 </script>
 {% endblock %}

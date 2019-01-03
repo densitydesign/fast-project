@@ -27,6 +27,62 @@
   </div>
 </header>
 
+<div id="filtri" style="display:none;">
+  <div class="form-group" class="title">
+    <label for="competitor" class="title">Competitor's comparison</label>
+    <select name="competitor" id="competitor" class="form-control">
+      <option value="">None</option>
+      <option value="175547541" {% if request.session.competitor == '175547541' %}selected="selected"{% endif %}>miguelinagambaccini</option>
+      <option value="8442900" {% if request.session.competitor == '8442900' %}selected="selected"{% endif %}>athenaprocopiou</option>
+      <option value="20718070" {% if request.session.competitor == '20718070' %}selected="selected"{% endif %}>lisamariefernandez</option>
+      <option value="332000242" {% if request.session.competitor == '332000242' %}selected="selected"{% endif %}>heidikleinswim</option>
+      <option value="439290000" {% if request.session.competitor == '439290000' %}selected="selected"{% endif %}>loupcharmant</option>
+      <option value="1041017111" {% if request.session.competitor == '1041017111' %}selected="selected"{% endif %}>zeusndione</option>
+      <option value="2091887150" {% if request.session.competitor == '2091887150' %}selected="selected"{% endif %}>daftcollectionofficial</option>
+      <option value="199457675" {% if request.session.competitor == '199457675' %}selected="selected"{% endif %}>muzungusisters</option>
+      <option value="52899088" {% if request.session.competitor == '52899088' %}selected="selected"{% endif %}>dodobaror</option>
+    </select>
+  </div>
+  {% if section == 'brand' %}
+  <div>
+    <label for="" class="title" >Type of Content</label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" value="" id="content_type1" value="AMBIENT">
+    <label class="form-check-label" for="content_type1">AMBIENT</label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" value="" id="content_type2" value="FASHION">
+    <label class="form-check-label" for="content_type2">FASHION</label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" value="" id="content_type3" value="LIFESTYLE">
+    <label class="form-check-label" for="content_type3">LIFESTYLE</label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" value="" id="content_type4" value="OTHER">
+    <label class="form-check-label" for="content_type4">OTHER</label>
+  </div>
+  {% endif %}
+  <div class="form-group">
+    <label for="timeframe" class="title">Time Frame</label>
+    <input type="text" class="form-control" id="timeframe" name="timeframe" value="" placeholder="Select Data" readonly/>
+    <small id="timeframelHelp" class="form-text text-muted">{{request.session.timeframe}}</small>
+  </div>
+
+  <div class="form-group">
+    <label for="limit" class="title">Limit</label>
+    <input type="text" class="form-control" id="limit" name="limit" value="{{request.session.limit|default:10}}" placeholder="Limit"/>
+  </div>
+  {% if section == 'community' %}
+  <div class="form-group">
+    <label for="complexity" class="title">Complexity</label>
+    <input type="text" class="form-control" id="complexity" name="complexity" value="{{request.session.complexity|default:100}}" placeholder="Complexity"/>
+  </div>
+  {% endif %}
+
+  <a href="javascript:filtra();" class="btn btn-primary">APPLICA</a>
+</div>
 {% block content %}
 {% endblock content %}
 
@@ -42,10 +98,18 @@
     
   });
 });
-</script>
-{% block bottom_script %}
 
-{% endblock %}
+  function toggleFiltri() {
+    $('#filtri').toggle();
+  }
+
+  function toggleMetrics() {
+    $('#metrics').toggle();
+  }
+
+</script>
+{% block common_bottom_script %}{% endblock %}
+{% block bottom_script %}{% endblock %}
   </body>
 </html>
 

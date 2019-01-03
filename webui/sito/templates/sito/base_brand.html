@@ -1,0 +1,58 @@
+{% extends 'sito/base.html' %}
+
+
+{% block content %}
+<div style="width:100%; clear:both;">
+  <div id="filtri-container">
+    <a href="javascript:toggleFiltri()" class="header" style="width:70px; float:left; ">FILTERS</a>
+    <a href="javascript:toggleMetrics()" class="header" style="width:80px; float: right;">METRICS</a>
+  </div>
+
+
+
+<div id="metrics" style="display:none;">
+  <div class="card-body">
+        <canvas id="line-chart" width="50" height="50"></canvas>
+  </div>
+  <div class="card-body">
+      <canvas id="myRadarChart" width="50" height="50"></canvas>
+  </div>
+</div>
+
+<div id="drawing-area" style="width:100%;min-height:800px;">
+  {% block drawing-area %}
+  <div id="graph" style="width:80%; height:600px; float:left;"></div>
+  <div id="data" style="width:18%; padding:1%; float:left;">
+    <div id="caption"></div>
+  </div>
+  <div style="clear:both;"></div>
+  {% endblock %}
+</div>
+{% block slider %}
+<div style="width:100%; min-height:100px; clear:both;">
+  <div style="width:100%; clear:both;">
+    <span style="float:right; margin-right: 40px; padding-bottom:10px;">PROPORTION</span><br/>
+  </div>
+  <div style="width:100%; clear:both;">
+    <div id="slider"></div>
+  </div>
+</div>
+{% endblock %}
+
+<div class="modal"><!-- Place at bottom of page --></div>
+
+<div class="submenu">
+  <a href="{% url 'brand-content' %}">Content</a> - 
+  <a href="{% url 'brand-time' %}">Time</a> -
+  <a href="{% url 'brand-hashtags' %}">Hashtags</a>
+</div>
+
+{% endblock %}
+
+
+{% block common_bottom_script %}
+{% endblock %}
+
+
+{% block bottom_script %}
+{% endblock %}
