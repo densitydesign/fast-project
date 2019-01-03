@@ -1,6 +1,7 @@
 import pandas as pd
 import snap
 from pymongo import MongoClient
+import bson
 
 client = MongoClient('mongodb://localhost:27017/')
 mongodb = client['FaST']
@@ -31,7 +32,7 @@ for i in range(V):
     type = t_net.GetStrAttrDatN(nid, 'type')
 
     if type == 'post':
-        id_post = t_net.GetStrAttrDatN(nid, 'id')
+        id_post = int(t_net.GetStrAttrDatN(nid, 'id'))
         
         taglist = []
         nodeIt = t_net.GetNI(nid)
@@ -40,19 +41,19 @@ for i in range(V):
             tagname = t_net.GetStrAttrDatN(tid, 'content')
             taglist.append(tagname)
             
-        usedtags[str(id_post)] = set(taglist)
+        usedtags[id_post] = set(taglist)
         
     elif type == 'user':
-        id_user = t_net.GetStrAttrDatN(nid, 'id')
+        id_user = int(t_net.GetStrAttrDatN(nid, 'id'))
         username = t_net.GetStrAttrDatN(nid, 'content')
         postlist = []
         nodeIt = t_net.GetNI(nid)
         for t in range(nodeIt.GetOutDeg()):
             pid = nodeIt.GetOutNId(t)
-            id_post = t_net.GetStrAttrDatN(pid, 'id')
+            id_post = int(t_net.GetStrAttrDatN(pid, 'id'))
             postlist.append(id_post)
             
-        userposts[username] = set(postlist)
+        userposts[id_user] = set(postlist)
     it.Next()
 
 # compute participation of each post in each cluster 
@@ -76,13 +77,13 @@ for p in usedtags.keys():
 post_followers_db = mongodb["post_followers"]
 i = 1
 for post in postPart.keys():
-    result = post_followers_db.update_one({'id_post': post}, {'$set': {'communities': postPart[post]}}, upsert=False)
+    result = post_followers_db.update_one({'id_post': bson.int64.Int64(post)}, {'$set': {'communities': postPart[post]}}, upsert=False)
     
     perc = float(i)*100/len(postPart)
     print str(perc)+'%'
         
     i = i+1
-    
+
 # compute user participation
 print ('Compute participation of each user based on post participation...')
 userPart = {}
@@ -90,7 +91,7 @@ for u in userposts.keys():
     u_posts = userposts[u]
     userPart[u] = {}
     for c in range(clusters.shape[0]-1):
-        c = str(c) # needed because of post have string keys
+        c = str(c) # needed because in mongodb only string keys can be used
         userPart[u][c] = 0.0
         n_relevant_posts = len(u_posts)
         for p in u_posts:
@@ -106,11 +107,9 @@ for u in userposts.keys():
             
     if not userPart[u]:
         del userPart[u]
-    else:
-        print u, userPart[u]
 
 # update followers user collection with this information
 user_db = mongodb["user"]
 for user in userPart.keys():
-    result = user_db.update_one({'username': user}, {'$set': {'communities': userPart[user]}}, upsert=False)
+    result = user_db.update_one({'id_user': bson.int64.Int64(user)}, {'$set': {'communities': userPart[user]}}, upsert=False)
     print 'user: ' + str(user) + ' matched ' + str(result.matched_count) + ' ,updated ' + str(result.modified_count)

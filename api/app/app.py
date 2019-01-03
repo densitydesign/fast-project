@@ -23,7 +23,8 @@ class Brand(Resource):
         storage = BrandsStorage(mongo.db.brand)
         return jsonify(storage.reload().json)
 
-from api.community import CommunityStorage, CommunityGraph, CommunityGraphRequests
+from api.community import CommunityStorage, CommunityGraph, CommunityGraphRequests, \
+    CommunityMetricsRequests, CommunityMetrics
 
 class Community(Resource):
 
@@ -44,6 +45,49 @@ class CommunitiesGraph(Resource, CommunityGraphRequests):
             "edges": edges
         })
 
+from abc import abstractproperty
+
+class CommunitiesMetrics(CommunityMetricsRequests):
+
+    @abstractproperty
+    def type(self):
+        return ""
+
+    def get(self, community_id, brand_id):
+        args = self.parse_args()
+
+        metrics = CommunityMetrics(mongo.db.stats)
+
+        storage = BrandsStorage(mongo.db.brand)
+
+        if (args.start):
+            metrics.set_start(args.start)\
+
+        if (args.end):
+            metrics.set_end(args.end)
+
+        brand_name = storage.get_name(brand_id)
+
+        entities = metrics.get_entities(community=community_id,
+                                        type=self.type,
+                                        brand=brand_name,
+                                        top=args.limit, filter_size=args.complexity)
+
+        size = metrics.size(brand=brand_name)
+
+        return {"posts": size, self.type: dict(entities)}
+
+class CommunitiesHashtags(Resource, CommunitiesMetrics):
+
+    @property
+    def type(self):
+        return "hashtags"
+
+class CommunitiesMentions(Resource, CommunitiesMetrics):
+
+    @property
+    def type(self):
+        return "mentions"
 
 from api.posts import PostRequests, build_query as post_query, parse_coords
 
@@ -78,15 +122,21 @@ class Metrics(Resource, MetricsRequests):
 
         print(query)
 
-        cursor = mongo.db.stats.find(query,{"_id": 0})
+        cursor = mongo.db.stats.find(query,{"_id": 0, "communities": 0})
 
-        return jsonify( aggregate_response( list( cursor ) ) )
+        return jsonify( aggregate_response( list( cursor ), args.window ) )
 
 
 api = Api(app)
 api.add_resource(Brand, "/brands")
 api.add_resource(Community, "/communities")
 api.add_resource(CommunitiesGraph, "/communities/graph")
+
+api.add_resource(CommunitiesHashtags, "/communities/<community_id>/<brand_id>/hashtags",
+                 "/communities/<string:community_id>/<int:brand_id>/hashtags")
+api.add_resource(CommunitiesMentions, "/communities/<community_id>/<brand_id>/mentions",
+                 "/communities/<string:community_id>/<int:brand_id>/mentions")
+
 api.add_resource(Post, "/posts/<brand_id>", "/posts/<string:brand_id>")
 api.add_resource(Metrics, "/metrics/<brand_id>", "/metrics/<string:brand_id>")
 
