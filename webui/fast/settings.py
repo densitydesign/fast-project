@@ -112,3 +112,5 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'MEDIA/')
 STATIC_ROOT = join(BASE_DIR, 'STATIC')
 MEDIA_URL = '/files/'
+
+BACKEND_HOST = "http://192.168.60.50:8080"

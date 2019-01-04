@@ -3,6 +3,7 @@ from django.shortcuts import render, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
+from django.conf import settings 
 
 @csrf_exempt
 def imposta_filtri(request):
@@ -20,13 +21,13 @@ def imposta_filtri(request):
 
 
 def brand_content(request):
-    return render(request, 'sito/brand.html', {'section':'brand'})
+    return render(request, 'sito/brand.html', {'section':'brand', 'backend': settings.BACKEND_HOST})
 
 def brand_time(request):
-    return render(request, 'sito/brand.html', {'section':'brand'})
+    return render(request, 'sito/brand.html', {'section':'brand', 'backend': settings.BACKEND_HOST})
 
 def brand_hashtags(request):
-    return render(request, 'sito/brand_hashtags.html', {'section':'brand'})
+    return render(request, 'sito/brand_hashtags.html', {'section':'brand', 'backend': settings.BACKEND_HOST})
 
 
 def community_definition(request):
@@ -34,7 +35,7 @@ def community_definition(request):
         # Per il momento mettiamo gli id in sessione
         request.session['community_id'] = request.POST.getlist('community_id')
         return HttpResponseRedirect(reverse('community'))
-    url = 'http://localhost:8080/communities'
+    url = '%s/communities'%settings.BACKEND_HOST
     response = requests.get(url)
     elenco = []
     if (response.ok):
@@ -47,7 +48,7 @@ def community_definition(request):
 
 def community(request):
     community_ids = ','.join(request.session.get('community_id', []))
-    url = 'http://localhost:8080/communities/graph?communities=%s&limit=10'% community_ids
+    url = '%s/communities/graph?communities=%s&limit=10'%(settings.BACKEND_HOST,community_ids)
     response = requests.get(url)
     edges = []
     nodes = []
@@ -74,7 +75,33 @@ def community(request):
         random.shuffle(nodes)
     return render(request, 'sito/community.html', {'section':'community', 'edges': edges, 'nodes':nodes})
 
+
 def community_detail(request, id_community, tipo='influencers'):
+    def color_dot(num, pref):
+        if num >= 75:
+            l = 1
+        elif num >= 50:
+            l = 2
+        elif num >= 50:
+            l = 3
+        elif num >= 0:
+            l = 4
+        return "%s%d"%(pref,l)
+
+    def color_dot_5(num, pref):
+        if num >= 80:
+            l = 1
+        elif num >= 60:
+            l = 2
+        elif num >= 40:
+            l = 3
+        elif num >= 20:
+            l = 4
+        else:
+            l = 5
+        return "%s%d"%(pref,l)
+
+
     brand = request.session.get('brand', '2252447111')
     competitor = request.session.get('competitor', None)
     limit = request.session.get('limit', '10')
@@ -94,150 +121,145 @@ def community_detail(request, id_community, tipo='influencers'):
         a = timeframe.split(' - ')
         start_day = a[0]
         end_day = a[1]
-    if tipo == 'influencers':
-        url = 'http://localhost:8080/communities/graph?communities=%s&limit=%s%s%s'% (id_community, limit, start, end)
-        response = requests.get(url)
-        nodes = []
-        if (response.ok):
-            data = json.loads(response.content)
-            # Trovo la dimensione massima
-            max_post = 0
-            for d in data['nodes']:
-                if d['label'] == 'user':
-                    if d['num_posts'] > max_post:
-                        max_post = d['num_posts']
-            for d in data['nodes']:
-                if d['label'] == 'user':
-                    num = 100 * d['num_posts'] / max_post
-                    if num >= 75:
-                        className = 'f1'
-                    elif num >= 50:
-                        className = 'f2'
-                    elif num >= 50:
-                        className = 'f3'
-                    elif num >= 0:
-                        className = 'f4'
-                    nodes.append({
-                        'title': d['username'],
-                        'size': d['followers_count'],
-                        'class': className
-                    })
-    elif tipo == 'hashtags':
-        # TODO: applicare filtri temporali
-        url = 'http://localhost:8080/communities/%s/%s/hashtags?limit=%s&complexity=%s%s%s' % (id_community, brand, limit, complexity, start, end)
-        response = requests.get(url)
-        nodes = []
-        if (response.ok):
-            data = json.loads(response.content)
-            max_users = 0
-            for k, v in data['hashtags'].items():
-                if v > max_users:
-                    max_users = v
-            
-        if competitor:
-            url = 'http://localhost:8080/communities/%s/%s/hashtags?limit=%s&complexity=%s%s%s' % (id_community, competitor, limit, complexity, start, end)
-            response = requests.get(url)
-            nodes = []
-            if (response.ok):
-                data_competitor = json.loads(response.content)
-                max_users = 0
-                for k, v in data_competitor['hashtags'].items():
-                    if v > max_users:
-                        max_users = v
-                
-        for k, v in data['hashtags'].items():
-            num = 100 * v / max_users
-            if num >= 75:
-                className = 'f1'
-            elif num >= 50:
-                className = 'f2'
-            elif num >= 50:
-                className = 'f3'
-            elif num >= 0:
-                className = 'f4'
-            nodes.append({
-                'title': k,
-                'size': v,
-                'class': className
-            })
 
-        if competitor:
-            for k, v in data_competitor['hashtags'].items():
-                num = 100 * v / max_users
-                if num >= 75:
-                    className = 'c1'
-                elif num >= 50:
-                    className = 'c2'
-                elif num >= 50:
-                    className = 'c3'
-                elif num >= 0:
-                    className = 'c4'
-                nodes.append({
-                    'title': k,
-                    'size': v,
-                    'class': className
-                })
-        random.shuffle(nodes)
-    elif tipo == 'mentions':
-        url = 'http://localhost:8080/communities/%s/%s/mentions?limit=%s&complexity=%s%s%s' % (id_community, brand, limit, complexity, start, end)
-        response = requests.get(url)
-        nodes = []
-        if (response.ok):
-            data = json.loads(response.content)
-            max_users = 0
-            for k, v in data['mentions'].items():
-                if v > max_users:
-                    max_users = v
-        else:
-            print(response.content)  
-        if competitor:
-            url = 'http://localhost:8080/communities/%s/%s/mentions?limit=%s&complexity=%s%s%s' % (id_community, competitor, limit, complexity, start, end)
+        
+        
+    def fn_influencers():
+        
+        def get_info(url):
             response = requests.get(url)
-            nodes = []
-            if (response.ok):
-                data_competitor = json.loads(response.content)
-                max_users = 0
-                for k, v in data_competitor['mentions'].items():
-                    if v > max_users:
-                        max_users = v
-        for k, v in data['mentions'].items():
-                num = 100 * v / max_users
-                if num >= 80:
-                    className = 'f1'
-                elif num >= 60:
-                    className = 'f2'
-                elif num >= 40:
-                    className = 'f3'
-                elif num >= 20:
-                    className = 'f4'
-                elif num >= 20:
-                    className = 'f5'
-                nodes.append({
-                    'title': k,
-                    'size': v,
-                    'class': className
-                })
-        if competitor and data_competitor:
-            for k, v in data_competitor['mentions'].items():
-                num = 10 * v / max_users
-                if num >= 8:
-                    className = 'c1'
-                elif num >= 6:
-                    className = 'c2'
-                elif num >= 4:
-                    className = 'c3'
-                elif num >= 2:
-                    className = 'c4'
-                else:
-                    className = 'c5'
-                nodes.append({
-                    'title': k,
-                    'size': v,
-                    'class': className
-                })
+            if not response.ok:
+                return {}
+
+            data = json.loads(response.content)
+            nodes_raw = [ d for d in data["nodes"] if d["label"] == "user" ]
+            if len(nodes_raw) == 0:
+                return {}
+            max_post = max([ d["num_posts"] for d in nodes_raw])
+            nodes = { d["id"]: {
+                'id': d["id"],
+                'title': d["username"],
+                'size': d["followers_count"],
+                'num_posts': d["num_posts"],
+                'class': color_dot(100*d["num_posts"]/max_post, "f"),
+                'border': 1
+            } for d in nodes_raw }
+
+            return nodes
+
+        def thick_border(x):
+            x["border"]=3
+            x["class"] = x["class"].replace("f","c")
+            return x
+
+        url_me = '%s/communities/graph?communities=%s&limit=%s%s%s'% (settings.BACKEND_HOST, id_community, limit, start, end)
+        me = get_info(url_me)
+        if competitor:
+            url_other = '%s/communities/graph?communities=%s&limit=%s%s%s'% (settings.BACKEND_HOST, competitor, limit, start, end)
+            other = get_info(url_other)
+        else:
+            other = {}
+
+        id_me = set(me.keys())
+        id_other = set(other.keys())
+
+        only_me = id_me - id_other
+        common_id = id_me.intersection(id_other)
+
+        influx_me = [ me[k] for k in only_me ]
+        influx_common = [ thick_border(me[k]) for k in common_id ]
+
+        return (False, influx_me+influx_common)
+
+    def fn_hashtags():
+        def get_info(url):
+            response = requests.get(url)
+            if not response.ok:
+                return {}
+
+            data = json.loads(response.content)
+            if len(data["hashtags"]) == 0:
+                max_users = 1
+            max_users = max(list(data["hashtags"].values()))
+            return { k:{ 'title':k, 'size':v, 'class':color_dot(100*v/max_users,"f"), 'max': max_users } for k,v in data["hashtags"].items() }
+
+        def add_scale(me, other):
+            me["other_size"] = other["size"]
+            me["other_max"] = other["max"]
+
+            me["scale"] = float(me["size"]) / (me["size"] + me["other_size"])
+            return me
+
+        url_me = '%s/communities/%s/%s/hashtags?limit=%s&complexity=%s%s%s' % (settings.BACKEND_HOST, id_community, brand, limit, complexity, start, end)
+        me = get_info(url_me)
+        if competitor:
+            url_other = '%s/communities/%s/%s/hashtags?limit=%s&complexity=%s%s%s' % (settings.BACKEND_HOST, id_community, competitor, limit, complexity, start, end)
+            other = get_info(url_other)
+
+            id_me = set(me.keys())
+            id_other = set(other.keys())
+
+            common_id = id_me.intersection(id_other)
+
+            return (True, [ add_scale(me[k], other[k]) for k in common_id ])
+
+        return (False, list(me.values()))
+
+    def fn_mentions():
+        def get_info(url):
+            response = requests.get(url)
+            if not response.ok:
+                return {}
+
+            data = json.loads(response.content)
+            if len(data["mentions"]) == 0:
+                max_users = 1
+            max_users = max(list(data["mentions"].values()))
+            return { k:{ 'title':k, 'size':v, 'class':color_dot_5(100*v/max_users,"f"), 'max': max_users } for k,v in data["mentions"].items() }
+
+        def add_scale(me, other):
+            me["other_size"] = other["size"]
+            me["other_max"] = other["max"]
+
+            me["scale"] = float(me["size"]) / (me["size"] + me["other_size"])
+            return me
+
+        url_me = '%s/communities/%s/%s/mentions?limit=%s&complexity=%s%s%s' % (settings.BACKEND_HOST, id_community, brand, limit, complexity, start, end)
+        me = get_info(url_me)
+        if competitor:
+            url_other = '%s/communities/%s/%s/mentions?limit=%s&complexity=%s%s%s' % (settings.BACKEND_HOST, id_community, competitor, limit, complexity, start, end)
+            other = get_info(url_other)
+
+            id_me = set(me.keys())
+            id_other = set(other.keys())
+
+            common_id = id_me.intersection(id_other)
+
+            return (True, [ add_scale(me[k], other[k]) for k in common_id ])
+
+        return (False, list(me.values()))
+        
+        
+    compare = False
+
+    
+    if tipo == 'influencers':
+        compare, nodes = fn_influencers()
+    elif tipo == 'hashtags':
+        compare, nodes = fn_hashtags()
+    elif tipo == 'mentions':
+        compare, nodes = fn_mentions()
+
+        
+    def cmp_scale(a):
+        return a["scale"]
+        
+    if compare:
+        nodes.sort(key=cmp_scale)
+    else:
         random.shuffle(nodes)
     return render(request, 'sito/community-detail.html', {'section':'community', 'id_community': id_community, 'data':nodes, 'start_day': start_day,
-            'end_day':end_day, 'tipo':tipo})
+                                                          'end_day':end_day, 'tipo':tipo, 'compare':compare, 'backend': settings.BACKEND_HOST})
 
 
 def change_section(request):

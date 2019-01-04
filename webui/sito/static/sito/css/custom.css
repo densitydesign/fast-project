@@ -195,16 +195,25 @@ div.hashtag {
 }
 
 
+.f1, .f2, .f3, .f4, .f5 {
+    stroke: black; stroke-width: 1;
+}
+
+.c1, .c2, .c3, .c4, .c5 {
+    stroke: black; stroke-width: 3;
+}
+
+
 .f1 { fill: #F4F1BB; background: #F4F1BB; }
 .f2 { fill: #F4D6AC; background: #F4D6AC; }
 .f3 { fill: #EA837F; background: #EA837F; }
 .f4 { fill: #E3606F; background: #E3606F; }
 .f5 { fill: #D81E5B; background: #D81E5B; }
-.c1 { fill: #F4F1BB; background: #F4F1BB; stroke: black; stroke-width: 1; }
-.c2 { fill: #F4D6AC; background: #F4D6AC; stroke: black; stroke-width: 1; }
-.c3 { fill: #EA837F; background: #EA837F; stroke: black; stroke-width: 1; }
-.c4 { fill: #E3606F; background: #E3606F; stroke: black; stroke-width: 1; }
-.c5 { fill: #D81E5B; background: #D81E5B; stroke: black; stroke-width: 1; }
+.c1 { fill: #F4F1BB; background: #F4F1BB; }
+.c2 { fill: #F4D6AC; background: #F4D6AC; }
+.c3 { fill: #EA837F; background: #EA837F; }
+.c4 { fill: #E3606F; background: #E3606F; }
+.c5 { fill: #D81E5B; background: #D81E5B; }
 
 div.tooltip { 
     position: absolute;     

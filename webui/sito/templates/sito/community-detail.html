@@ -30,66 +30,157 @@
  
   // D3 Bubble Chart 
 
-  var diameter = $('#graph').width();
-
-  var div = d3.select("body").append("div") 
-    .attr("class", "tooltip")       
-    .style("opacity", 0);
-
-
+  var sx = $('#graph').width();
+  var sy = $('#graph').height();
+  var diameter = (sx<sy ? sx : sy);
+  
+  var div = d3.select("body")
+      .append("div") 
+      .attr("class", "tooltip")       
+      .style("opacity", 0);
+                        
   var svg = d3.select('#graph').append('svg')
-          .attr('width', diameter)
-          .attr('height', diameter);
-
+  {% if compare %}
+  .attr('width', sx).attr('height', sy);
+  {% else %}
+  .attr('width', diameter).attr('height', diameter);
+  {% endif %}  
   var bubble = d3.layout.pack()
-        .size([diameter, diameter])
-        .value(function(d) {return d.size;})
-         .sort(function(a, b) {
-          return 
-         }) 
-        .padding(0);
-  
+      .size([diameter, diameter])
+      .value(function(d) { return d.size; })
+      .sort(function(a, b) { return; })
+      .padding(0);
 
+  {% if compare %}
   // generate data with calculated layout values
-  var nodes = bubble.nodes(processData())
-            .filter(function(d) { return !d.children; }); // filter out the outer bubble
- 
-  var vis = svg.selectAll('circle')
-          .data(nodes);
+  function compare_placement(data) {
+      var nodes;
+      var j1, l;
+      var last_y, last_x, last_r;
+      var max_size;
+      
+      function overlaps(node1, node2) {
+          var dmin2 = Math.pow(node1.r + node2.r,2);
+          var d2 = Math.pow(node2.x - node1.x, 2) + Math.pow(node2.y - node1.y, 2);
+          
+          return {
+              "dx2": Math.pow(node1.x - node2.x,2),
+              "dmin2": dmin2,
+              "d2": d2,
+              "does": d2<=dmin2
+          };
+      }
+
+      function get_new_y() {
+          return 0.2+0.6*Math.random();
+      }
+
+      nodes = data.children;
+      l = nodes.length;
+      max_size = 1;
+      for (j1=0; j1<l; j1++) {
+          nodes[j1].value = parseInt(nodes[j1].size,10);
+          nodes[j1].x = nodes[j1].scale * sx;
+          nodes[j1].y = sy*get_new_y();
+          
+          if (max_size<nodes[j1].value) {
+              max_size = nodes[j1].value;
+          }
+      }
+      
+
+      // recalculate R as scaled
+      middle_y = sy/2;
+      var log10ref = Math.log(max_size);
+      for (j1=0; j1<l; j1++) {
+          // default values
+          nodes[j1].r = 50 * Math.log(nodes[j1].value) / log10ref;
+      }
+
+      // have we some overlaps?
+      
+      
+
+      return nodes;
+  }
+
+  var nodes = compare_placement(processData());
+  var vis = svg.selectAll('circle').data(nodes);
   
-  vis.enter().append('circle')
+  vis.enter()
+      .append('circle')
+      .attr('transform', function(d) { return 'translate(' + d.x + "," + d.y + ')'; })
+      .attr('r', function(d) { return d.r; })
+      .attr('class', function(d) { return d.className; })
+      .on("mouseover", function(d) {  
+               div.transition()    
+                   .duration(200)    
+                   .style("opacity", .9);    
+               div.html({% if tipo == 'hashtags' %}'#'+{% elif tipo == 'mentions'%}'@'+{%endif%}d.name +' - '+ d.size)  
+                   .style("left", (d3.event.pageX) + "px")   
+                   .style("top", (d3.event.pageY - 28) + "px");  
+           })          
+       .on("mouseout", function(d) {   
+               div.transition()    
+                   .duration(500)    
+                   .style("opacity", 0); 
+           })
+       ;
+  {% else %}
+  // generate data with calculated layout values
+  var nodes = bubble.nodes(processData()).filter(function(d) { return !d.children; }); // filter out the outer bubble
+
+  {
+      var j1,l;
+      l = nodes.length;
+      l = (l>5?5:l);
+      for (j1=0; j1<l; j1++) {
+          console.log(nodes[j1]);
+      }
+  }
+  
+  
+  var vis = svg.selectAll('circle').data(nodes);
+  
+  vis.enter()
+      .append('circle')
       .attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')'; })
       .attr('r', function(d) { return d.r; })
       .attr('class', function(d) { return d.className; })
       .on("mouseover", function(d) {  
-            div.transition()    
-                .duration(200)    
-                .style("opacity", .9);    
-            div .html({% if tipo == 'hashtags' %}'#'+{% elif tipo == 'mentions'%}'@'+{%endif%}d.name +' - '+ d.size)  
-                .style("left", (d3.event.pageX) + "px")   
-                .style("top", (d3.event.pageY - 28) + "px");  
-            })          
-        .on("mouseout", function(d) {   
-            div.transition()    
-                .duration(500)    
-                .style("opacity", 0); 
-        })
-
+              div.transition()    
+                  .duration(200)    
+                  .style("opacity", .9);    
+              div.html({% if tipo == 'hashtags' %}'#'+{% elif tipo == 'mentions'%}'@'+{%endif%}d.name +' - '+ d.size)  
+                  .style("left", (d3.event.pageX) + "px")   
+                  .style("top", (d3.event.pageY - 28) + "px");  
+          })          
+      .on("mouseout", function(d) {   
+              div.transition()    
+                  .duration(500)    
+                  .style("opacity", 0); 
+          })
       ;
+  {% endif %}  
+  
   
   function processData() {
-    var newDataSet = [{% for d in data %}
-      {name: "{{d.title}}", className: "{{d.class}}", size: "{{d.size}}"}{% if not forloop.last%},{% endif %}
+      var newDataSet = [{% for d in data %}
+      {name: "{{d.title}}", className: "{{d.class}}", size: "{{d.size}}"
+       {% if compare %}
+       , scale: "{{ d.scale }}"
+       {% endif %}
+      }{% if not forloop.last%},{% endif %}
     {% endfor %}];
-  
-    return {children: newDataSet};
+      
+      return {children: newDataSet};
   }
   
 })();
     
 });
 
-  var URL_BASE = "http://localhost:8080"; // TODO: usare url vero
+  var URL_BASE = "{{ backend }}"; // TODO: usare url vero
   var ID_SIRENUSE = '2252447111';
   var limit = 10;
 
