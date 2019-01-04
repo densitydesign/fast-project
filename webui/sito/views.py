@@ -240,26 +240,41 @@ def community_detail(request, id_community, tipo='influencers'):
         return (False, list(me.values()))
         
         
-    compare = False
-
-    
     if tipo == 'influencers':
         compare, nodes = fn_influencers()
     elif tipo == 'hashtags':
         compare, nodes = fn_hashtags()
     elif tipo == 'mentions':
         compare, nodes = fn_mentions()
-
-        
-    def cmp_scale(a):
-        return a["scale"]
-        
-    if compare:
-        nodes.sort(key=cmp_scale)
     else:
-        random.shuffle(nodes)
-    return render(request, 'sito/community-detail.html', {'section':'community', 'id_community': id_community, 'data':nodes, 'start_day': start_day,
-                                                          'end_day':end_day, 'tipo':tipo, 'compare':compare, 'backend': settings.BACKEND_HOST})
+        # error?
+        compare, nodes = False, []
+
+    if competitor:
+        competitor_name = {
+            "175547541" : "miguelinagambaccini",
+            "8442900" : "athenaprocopiou",
+            "20718070" : "lisamariefernandez",
+            "332000242" : "heidikleinswim",
+            "439290000" : "loupcharmant",
+            "1041017111" : "zeusndione",
+            "2091887150" : "daftcollectionofficial",
+            "199457675" : "muzungusisters",
+            "52899088" : "dodobaror",
+        }.get(competitor, "competitor")
+    else:
+        competitor_name = ""
+        
+    random.shuffle(nodes)
+    return render(request, 'sito/community-detail.html', {'section':'community',
+                                                          'id_community': id_community,
+                                                          'data':nodes,
+                                                          'start_day': start_day,
+                                                          'end_day':end_day,
+                                                          'tipo':tipo,
+                                                          'compare':compare,
+                                                          'competitor':competitor_name,
+                                                          'backend': settings.BACKEND_HOST})
 
 
 def change_section(request):

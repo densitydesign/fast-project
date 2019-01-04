@@ -13,6 +13,13 @@
 </div>
 
 <div style="width:100%;">
+{% if compare %}
+<div style="width:80%;">
+<div style="float:right;">{{ competitor }}</div>
+sirenuse
+</div>
+{% endif %}
+
   <div class="chart-example" id="graph" style="width:80%; height:600px; float:left;"></div>
 </div>
 
@@ -55,7 +62,7 @@
   // generate data with calculated layout values
   function compare_placement(data) {
       var nodes;
-      var j1, l;
+      var j1,j2, l;
       var last_y, last_x, last_r;
       var max_size;
       
@@ -94,11 +101,43 @@
       var log10ref = Math.log(max_size);
       for (j1=0; j1<l; j1++) {
           // default values
-          nodes[j1].r = 50 * Math.log(nodes[j1].value) / log10ref;
+          nodes[j1].r = sy / 12 * Math.log(nodes[j1].value) / log10ref;
       }
 
       // have we some overlaps?
-      
+      var dir;
+
+      dir=1;
+      for (j1=0; j1<l; j1++) {
+          var n_rerun = 20;
+          var is_rerun = false;
+          for (j2=0; j2<j1; j2++) {
+              var over = overlaps(nodes[j1], nodes[j2]);
+              if (over.does) {
+                  // we have an overlap
+                  var over1;
+                  
+                  dy = Math.sqrt(over.dmin2 - over.dx2);
+
+                  nodes[j1].y += dy * dir;
+                  if (!is_rerun)
+                      dir *= -1;
+                  if (nodes[j1].y-nodes[j1].r<0) {
+                      nodes[j1].y = nodes[j1].r;
+                      dir=1;
+                  } else if (nodes[j1].y+nodes[j1].r>sy) {
+                      nodes[j1].y = sy - nodes[j1].r;
+                      dir=-1;
+                  }
+
+                  // rerun
+                  n_rerun--;
+                  is_rerun = true;
+                  if (n_rerun>0)
+                      j2=0;
+              }
+          }
+      }
       
 
       return nodes;
