@@ -227,3 +227,41 @@ div.tooltip {
     border-radius: 8px;     
     pointer-events: none;     
 }
+
+rect.sankey_norm {
+    fill:blue;
+    stroke:none;
+}
+rect.sankey_off {
+    fill:blue;
+    stroke: none;
+    opacity: 0.2;
+}
+rect.sankey_on {
+    fill:orange;
+    stroke:none;
+}
+
+path.sankey_norm {
+    fill:black;
+    fill-opacity:0.2;
+}
+path.sankey_on {
+    fill:rgb(198,239,239);
+    fill-opacity:1;
+}
+path.sankey_off {
+    fill:black;
+    fill-opacity:0.01;
+}
+
+text.sankey_norm,
+text.sankey_off {
+    fill-opacity: 0;
+}
+
+text.sankey_on {
+    font-weight:bold;
+    fill:black;
+    font-size: 14px;
+}

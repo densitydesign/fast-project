@@ -5,7 +5,10 @@
 function brand_hashtag(data) {
     var sx = $('#drawing-area').width();
     var sy = $('#drawing-area').height();
-    var svg = d3.select('#drawing-area').append('svg').attr('width', sx).attr('height', sy);
+
+    var area = d3.select('#drawing-area') 
+    var svg = area.append('svg').attr('width', sx).attr('height', sy);
+    
 
     var max_height, n_for_max;
     var rects = {};
@@ -43,7 +46,7 @@ function brand_hashtag(data) {
         }
     }
 
-    function Rectangle(x0, y0, w, h, ht) {
+    function Rectangle(x0, y0, w, h, ht, val) {
         this.p = [
             { x: x0, y: y0 },
             { x: x0+w, y: y0 },
@@ -54,30 +57,30 @@ function brand_hashtag(data) {
         this.s = { w: w, h: h};
         this.ht = ht;
 
-        style_rect = ["fill:blue;stroke:black;stroke-width:1", "fill:red;stroke:black;stroke-width:1"];
-        style_link = ["fill:black; fill-opacity:0.2", "fill:yellow; fill-opacity:0.7"];
-
         function highlight(obj, sts) {
-            var sr, sl;
-
-            if (sts) {
-                sr = style_rect[1];
-                sl = style_link[1];
-            } else {
-                sr = style_rect[0];
-                sl = style_link[0];
-            }
-
             var r = d3.select(obj);
             var ht = r.attr("ht");
-            var path = rects[ht];
-            var n, j;
-            n = path.length;
 
-            for (j=0; j<n; j++) {
-                path[j].elt.attr("style", sr);
-                if (path[j].link_out)
-                    path[j].link_out.attr("style", sl);
+            for (var k in rects) {
+                var className;
+                
+                if (!sts)
+                    className = "sankey_norm";
+                else if ( k == ht )
+                    className = "sankey_on";
+                else
+                    className = "sankey_off";
+
+                var path = rects[k];
+                var n, j;
+                n = path.length;
+                
+                for (j=0; j<n; j++) {
+                    path[j].elt.attr("class", className);
+                    path[j].text.attr("class", className);
+                    if (path[j].link_out)
+                        path[j].link_out.attr("class", className);
+                }
             }
         }
 
@@ -87,9 +90,27 @@ function brand_hashtag(data) {
                 .attr("ht",ht)
                 .attr("x",this.o.x).attr("y",this.o.y)
                 .attr("width", this.s.w).attr("height", this.s.h)
-                .attr("style", style_rect[0]);
+                .attr("class", "sankey_norm");
+
+            this.text = svg.append("text");
+            var tx = this.o.x + this.s.w - 4;
+            var ty = this.o.y + 4;
+            
+            this.text
+                .text(val)
+                .attr("ht",ht)
+                .attr("x", tx)
+                .attr("y", ty)
+                .attr("transform", "rotate(270,"+tx+","+ty+")")
+                .attr("text-anchor", "end")
+                .attr("class","sankey_norm")
+            ;
 
             this.elt
+                .on("mouseover", function() { highlight(this, true); })
+                .on("mouseout", function() { highlight(this, false); })
+            ;
+            this.text
                 .on("mouseover", function() { highlight(this, true); })
                 .on("mouseout", function() { highlight(this, false); })
             ;
@@ -124,7 +145,7 @@ function brand_hashtag(data) {
             this.link_out = svg.append("path");
             this.link_out
                 .attr("ht", this.ht)
-                .attr("style",style_link[0])
+                .attr("class","sankey_norm")
                 .attr("d", d);
             this.link_out
                 .on("mouseover", function() { highlight(this, true); })
@@ -132,33 +153,6 @@ function brand_hashtag(data) {
             ;
         }
 
-        this.linktop = function (svg, next) {
-            function quad(p0, p1) {
-                dx = p1.x - p0.x;
-                dy = p1.y - p0.y;
-                return [
-                    p0,
-                    { x: p0.x + (dx / 4), y: p0.y },
-                    { x: p0.x + (dx / 2), y: p0.y + (dy / 2) },
-                    { x: p0.x + (3 * dx / 4), y: p1.y },
-                    p1
-                ];
-            }
-
-            function to_text(p) {
-                return p.x+" "+p.y;
-            }
-
-            k = quad(this.p[1], next.p[0]).concat(quad(next.p[3], this.p[2]));
-            d = [ "M", to_text(k[0]),
-                  "Q", to_text(k[1]), to_text(k[2]),
-                  "Q", to_text(k[3]), to_text(k[4])
-                ].join(" ");
-            this.link_out = svg.append("path");
-            this.link_out
-                .attr("style","stroke:black; stroke-opacity:0.5; fill:none;")
-                .attr("d", d);
-        }
         return this;
     }
 
@@ -180,7 +174,7 @@ function brand_hashtag(data) {
             if (rects[ht] == undefined)
                 rects[ht] = [];
 
-            rects[ht].push(new Rectangle(x0, y0, 10, v, days[jday][jht].ht));
+            rects[ht].push(new Rectangle(x0, y0, 20, v, days[jday][jht].ht, days[jday][jht].value));
             y0+=v+10;
         }
     }
