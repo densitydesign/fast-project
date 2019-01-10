@@ -26,6 +26,14 @@ def brand_content(request):
 def brand_time(request):
     return render(request, 'sito/brand.html', {'section':'brand', 'backend': settings.BACKEND_HOST})
 
+def brand_hashtags_json(request):
+    test_json = open("/tmp/tmp_win/2252447111.json","r").read()
+    #data = json.load(test_json)
+    
+    return HttpResponse(test_json, content_type='text/json')
+
+    
+
 def brand_hashtags(request):
     return render(request, 'sito/brand_hashtags.html', {'section':'brand', 'backend': settings.BACKEND_HOST})
 
