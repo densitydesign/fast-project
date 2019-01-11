@@ -264,4 +264,19 @@ text.sankey_on {
     font-weight:bold;
     fill:black;
     font-size: 14px;
+    cursor: pointer;
+}
+
+.sankey_on,
+.sankey_off,
+.sankey_norm {
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+div.sankeylegend {
+    height: 2em;
+    color:rgb(51, 8, 103);
+    font-weight:bold;
+    padding: 3px;
 }

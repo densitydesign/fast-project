@@ -7,12 +7,15 @@ function brand_hashtag(data) {
     var sy = $('#drawing-area').height();
 
     var area = d3.select('#drawing-area') 
-    var svg = area.append('svg').attr('width', sx).attr('height', sy);
+    var legend = area.append('div').attr('class', 'sankeylegend');
+    var legend_ht = legend.append('span').html("");
+    legend.append('span').html("&nbsp;&nbsp;&nbsp;");
+    var legend_date = legend.append('span').html("");
     
+    var svg = area.append('svg').attr('width', sx).attr('height', sy);
 
     var max_height, n_for_max;
     var rects = {};
-
 
     max_height = 0;
     n_for_max = 0;
@@ -21,10 +24,11 @@ function brand_hashtag(data) {
         var sum = 0;
         var cnt = 0;
         var one_day = []
+        var date = new Date(1000 * day)
         for (var ht in data[day]) {
             sum += data[day][ht];
             cnt++;
-            one_day.push({ ht: ht, value: data[day][ht]})
+            one_day.push({ day: date.toDateString(), ht: ht, value: data[day][ht]})
         }
         one_day.sort(function (a,b) {
             if (Math.abs(a.value-b.value)<0.003) {
@@ -46,7 +50,7 @@ function brand_hashtag(data) {
         }
     }
 
-    function Rectangle(x0, y0, w, h, ht, val) {
+    function Rectangle(x0, y0, w, h, ht, val, date) {
         this.p = [
             { x: x0, y: y0 },
             { x: x0+w, y: y0 },
@@ -56,17 +60,28 @@ function brand_hashtag(data) {
         this.o = this.p[0];
         this.s = { w: w, h: h};
         this.ht = ht;
+        this.val = val;
+        this.date = date;
 
         function highlight(obj, sts) {
             var r = d3.select(obj);
             var ht = r.attr("ht");
+            var date = r.attr("date");
+
+            if (sts) {
+                legend_ht.html("#"+ht);
+                legend_date.html(date);
+            } else {
+                legend_ht.html("");
+                legend_date.html("");
+            }
 
             for (var k in rects) {
                 var className;
                 
                 if (!sts)
                     className = "sankey_norm";
-                else if ( k == ht )
+                else if ( k == ht ) 
                     className = "sankey_on";
                 else
                     className = "sankey_off";
@@ -88,6 +103,7 @@ function brand_hashtag(data) {
             this.elt = svg.append("rect");
             this.elt
                 .attr("ht",ht)
+                .attr("date", date)
                 .attr("x",this.o.x).attr("y",this.o.y)
                 .attr("width", this.s.w).attr("height", this.s.h)
                 .attr("class", "sankey_norm");
@@ -98,6 +114,7 @@ function brand_hashtag(data) {
             
             this.text
                 .text(val)
+                .attr("date", date)
                 .attr("ht",ht)
                 .attr("x", tx)
                 .attr("y", ty)
@@ -145,6 +162,7 @@ function brand_hashtag(data) {
             this.link_out = svg.append("path");
             this.link_out
                 .attr("ht", this.ht)
+                .attr("date","")
                 .attr("class","sankey_norm")
                 .attr("d", d);
             this.link_out
@@ -174,7 +192,7 @@ function brand_hashtag(data) {
             if (rects[ht] == undefined)
                 rects[ht] = [];
 
-            rects[ht].push(new Rectangle(x0, y0, 20, v, days[jday][jht].ht, days[jday][jht].value));
+            rects[ht].push(new Rectangle(x0, y0, 20, v, days[jday][jht].ht, days[jday][jht].value, days[jday][jht].day));
             y0+=v+10;
         }
     }
