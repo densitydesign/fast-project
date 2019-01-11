@@ -11,7 +11,7 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
-    d3.json('{% url 'brand-hashtags-json' %}', function(err,fig) {
+    d3.json('{% url 'brand-hashtags-json' brand %}', function(err,fig) {
         if (err) {
             d3.select("body").append("div").attr("class", "error").html(err);
             return;
@@ -20,6 +20,42 @@ $(document).ready(function() {
         brand_hashtag(fig.hashtags);
     });
 })
+
+var ID_SIRENUSE = '2252447111';
+
+function filtra() {
+    competitor = $('#competitor').val();
+    $('#filtri').toggle();
+    start = ''
+    end = ''
+    timeframe = $('#timeframe').val();
+    if (timeframe != "") {
+      date = timeframe.split(' - ');
+      var from_date = new Date(date[0]);
+      start = from_date.getTime()/1000;
+      var to_date = new Date(date[1]);
+      end = to_date.getTime()/1000;
+
+    }
+    data = {
+      'brand': ID_SIRENUSE,
+      'competitor': competitor,
+      'timeframe': timeframe,
+      'start': start,
+      'end': end,
+      'limit': $('#limit').val(),
+      'complexity': $('#complexity').val()
+    }
+    $.post({ 
+        url: '{% url 'imposta-filtri' %}',
+        data: data
+    }).done(function(data) {
+      location.reload();
+    }).fail(function() {
+      showError();
+    });
+  }
+
 </script>
 
 

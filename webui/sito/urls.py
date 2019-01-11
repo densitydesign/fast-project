@@ -6,6 +6,7 @@ from sito import views
 urlpatterns = [
     path('imposta-filtri/', views.imposta_filtri, name='imposta-filtri'),
     path('change-section/', views.change_section, name='change-section'),
+    url('brand-hashtags.json/(?P<id_community>[0-9]+)', views.brand_hashtags_json, name='brand-hashtags-json'),
     url('brand-hashtags.json', views.brand_hashtags_json, name='brand-hashtags-json'),
     url('brand-hashtags', views.brand_hashtags, name='brand-hashtags'),
     url('brand-time', views.brand_time, name='brand-time'),

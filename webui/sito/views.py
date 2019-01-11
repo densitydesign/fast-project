@@ -26,16 +26,32 @@ def brand_content(request):
 def brand_time(request):
     return render(request, 'sito/brand.html', {'section':'brand', 'backend': settings.BACKEND_HOST})
 
-def brand_hashtags_json(request):
-    test_json = open("/tmp/tmp_win/2252447111.json","r").read()
-    #data = json.load(test_json)
-    
-    return HttpResponse(test_json, content_type='text/json')
+def brand_hashtags_json(request, id_community = "2252447111", filter_from=None, filter_to=None):
+    url = '%s/metrics/%s?window=month'%(settings.BACKEND_HOST, id_community)
+    response = requests.get(url)
+    if (response.ok):
+        data = response.content
+        return HttpResponse(data, content_type='text/json')
 
+    raise Exception("502 - Gateway error")
     
 
 def brand_hashtags(request):
-    return render(request, 'sito/brand_hashtags.html', {'section':'brand', 'backend': settings.BACKEND_HOST})
+    brand = request.session.get('brand', '2252447111')
+    competitor = request.session.get('competitor', brand)
+    limit = request.session.get('limit', '10')
+    complexity = request.session.get('complexity', '100')
+    start = request.session.get('start', '')
+    end = request.session.get('end', '')
+
+    
+    return render(request, 'sito/brand_hashtags.html',
+                  {'section':'brand',
+                   'backend': settings.BACKEND_HOST,
+                   'brand': competitor,
+                   'start': start,
+                   'end': end
+                  })
 
 
 def community_definition(request):
