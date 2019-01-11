@@ -28,7 +28,7 @@ function brand_hashtag(data) {
         for (var ht in data[day]) {
             sum += data[day][ht];
             cnt++;
-            one_day.push({ day: date.toDateString(), ht: ht, value: data[day][ht]})
+            one_day.push({ day: date.toDateString() + " - " + data[day][ht], ht: ht, value: data[day][ht]})
         }
         one_day.sort(function (a,b) {
             if (Math.abs(a.value-b.value)<0.003) {
