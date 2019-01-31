@@ -187,7 +187,7 @@ def community_detail(request, id_community, tipo='influencers'):
             me["other_size"] = other["size"]
             me["other_max"] = other["max"]
 
-            me["scale"] = float(me["size"]) / (me["size"] + me["other_size"])
+            me["scale"] = float(me["other_size"]) / (me["size"] + me["other_size"])
             return me
 
         url_me = '%s/communities/%s/%s/hashtags?limit=%s&complexity=%s%s%s' % (settings.BACKEND_HOST, id_community, brand, limit, complexity, start, end)
@@ -221,7 +221,7 @@ def community_detail(request, id_community, tipo='influencers'):
             me["other_size"] = other["size"]
             me["other_max"] = other["max"]
 
-            me["scale"] = float(me["size"]) / (me["size"] + me["other_size"])
+            me["scale"] = float(me["other_size"]) / (me["size"] + me["other_size"])
             return me
 
         url_me = '%s/communities/%s/%s/mentions?limit=%s&complexity=%s%s%s' % (settings.BACKEND_HOST, id_community, brand, limit, complexity, start, end)
