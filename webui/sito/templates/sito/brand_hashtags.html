@@ -5,66 +5,57 @@
 {% block drawing-area %}{% endblock %}
 
 {% block bottom_script %}
-<script src="/static/sito/js/lodash.js"></script>
-<script src="/static/sito/js/plotly-latest.min.js"></script>
-
+<script src="/static/sito/js/d3.min.js"></script>
+<script src="/static/sito/js/brand_hashtag.js"></script>
 
 <script type="text/javascript">
-function disegnaSankey() {
-  Plotly.d3.json('https://raw.githubusercontent.com/plotly/plotly.js/master/test/image/mocks/sankey_energy_dark.json', function(fig){
-
-    debugger;
-
-  var data = {
-    type: "sankey",
-    domain: {
-      x: [0,1],
-      y: [0,1]
-    },
-    orientation: "h",
-    valueformat: ".0f",
-    valuesuffix: "TWh",
-    node: {
-      pad: 15,
-      thickness: 15,
-      line: {
-        color: "black",
-        width: 0.5
-      },
-     label: fig.data[0].node.label,
-     color: fig.data[0].node.color
-        },
-    link: {
-      source: fig.data[0].link.source,
-      target: fig.data[0].link.target,
-      value: fig.data[0].link.value,
-      label: fig.data[0].link.label
-    }
-  }
-
-  var data = [data]
-
-  var layout = {
-    title: "Energy forecast for 2050 Source: Department of Energy & Climate Change, Tom Counsell via Mike Bostock",
-    width: $('#drawing-area').width(),
-    height: $('#drawing-area').height(),
-    font: {
-      size: 10,
-      color: 'white'
-    },
-    plot_bgcolor: 'white',
-    paper_bgcolor: 'white'
-  }
-
-  Plotly.plot('drawing-area', data, layout)
-  });
-}
-
 
 $(document).ready(function() {
+    d3.json('{% url 'brand-hashtags-json' brand %}', function(err,fig) {
+        if (err) {
+            d3.select("body").append("div").attr("class", "error").html(err);
+            return;
+        }
 
-  disegnaSankey();
+        brand_hashtag(fig.hashtags);
+    });
 })
+
+var ID_SIRENUSE = '2252447111';
+
+function filtra() {
+    competitor = $('#competitor').val();
+    $('#filtri').toggle();
+    start = ''
+    end = ''
+    timeframe = $('#timeframe').val();
+    if (timeframe != "") {
+      date = timeframe.split(' - ');
+      var from_date = new Date(date[0]);
+      start = from_date.getTime()/1000;
+      var to_date = new Date(date[1]);
+      end = to_date.getTime()/1000;
+
+    }
+    data = {
+      'brand': ID_SIRENUSE,
+      'competitor': competitor,
+      'timeframe': timeframe,
+      'start': start,
+      'end': end,
+      'limit': $('#limit').val(),
+      'complexity': $('#complexity').val()
+    }
+    $.post({ 
+        url: '{% url 'imposta-filtri' %}',
+        data: data
+    }).done(function(data) {
+      location.reload();
+    }).fail(function() {
+      showError();
+    });
+  }
+
 </script>
 
 

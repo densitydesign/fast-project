@@ -169,14 +169,6 @@ sirenuse
   // generate data with calculated layout values
   var nodes = bubble.nodes(processData()).filter(function(d) { return !d.children; }); // filter out the outer bubble
 
-  {
-      var j1,l;
-      l = nodes.length;
-      l = (l>5?5:l);
-      for (j1=0; j1<l; j1++) {
-          console.log(nodes[j1]);
-      }
-  }
   
   
   var vis = svg.selectAll('circle').data(nodes);
