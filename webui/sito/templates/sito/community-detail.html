@@ -5,13 +5,15 @@
 
 {% block content %}
 <div style="width:100%; clear:both;">
-  <div id="filtri-container">
-    <a href="javascript:toggleFiltri()" class="header" style="width:70px; float:left; ">FILTERS</a>
-    <a href="{% url 'community-detail' id_community 'influencers' %}">Influencers</a> - 
-    <a href="{% url 'community-detail' id_community 'hashtags' %}">Hashtags</a> - 
-    <a href="{% url 'community-detail' id_community 'mentions' %}">Mentions</a>
+  {% if community_name%}<h1>Community<br/><span style="font-weight:700;text-transform:uppercase;">{{community_name}}</span></h1>{% endif %}
 
-    <a href="{% url 'community' %}"  class="header" style="float:right;">BACK</a>
+  <div id="filtri-container">
+    <div>
+      <a href="javascript:toggleFiltri()" class="header" style="width:70px; float:left; ">FILTERS</a>
+    </div>
+    <div style="float:right;">
+      <a href="{% url 'community' %}"  class="header" style="float:right;">BACK</a>
+  </div>
 </div>
 
 <div style="width:100%;">
@@ -22,7 +24,19 @@ sirenuse
 </div>
 {% endif %}
 
-  <div class="chart-example" id="graph" style="width:80%; height:600px; float:left;"></div>
+  <div class="chart-example" id="graph" style="width:100%; height:600px; float:left;"></div>
+
+  <div style="width:360px; margin:auto;">
+      <div class="submenu-link {% if tipo == 'influencers' %}selected{% endif %}">
+        <a href="{% url 'community-detail' id_community 'influencers' %}" class="{% if tipo == 'influencers' %}selected{% endif %}"><i class="fas fa-bullhorn"></i> <br/>Influencers</a>
+      </div>
+      <div class="submenu-link {% if tipo == 'influencers' %}hashtags{% endif %}">
+        <a href="{% url 'community-detail' id_community 'hashtags' %}" class="{% if tipo == 'hashtags' %}selected{% endif %}"><i class="fas fa-tag"></i><br/>Hashtags</a>
+      </div>
+      <div class="submenu-link {% if tipo == 'influencers' %}mentions{% endif %}">
+        <a href="{% url 'community-detail' id_community 'mentions' %}" class="{% if tipo == 'mentions' %}selected{% endif %}"><i class="fas fa-at"></i><br/>Mentions</a>
+      </div>
+    </div>
 </div>
 
 
