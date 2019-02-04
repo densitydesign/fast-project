@@ -292,3 +292,9 @@ div.legenda {
   background-color: #330867;
   border-color: #330867;
 }
+
+input.community-name {
+  border: transparent;
+  width: 98%;
+  padding:1%;
+}

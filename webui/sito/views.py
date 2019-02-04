@@ -5,10 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from django.conf import settings 
 
+from .models import *
+
 @csrf_exempt
 def imposta_filtri(request):
-    print('imposta_filtri')
-    print (request.POST)
     request.session['brand'] = request.POST.get('brand', None)
     request.session['competitor'] = request.POST.get('competitor', None)
     request.session['complexity'] = request.POST.get('complexity', '100')
@@ -57,7 +57,14 @@ def brand_hashtags(request):
 def community_definition(request):
     if request.method == 'POST':
         # Per il momento mettiamo gli id in sessione
-        request.session['community_id'] = request.POST.getlist('community_id')
+        lista = request.POST.getlist('community_id')
+        request.session['community_id'] = lista
+        for c in lista:
+            new, _ = Community.objects.get_or_create(id_backend=c)
+            nome = request.POST.get('name_%s'%c, None)
+            if nome:
+                new.name = nome
+                new.save()
         return HttpResponseRedirect(reverse('community'))
     url = '%s/communities'%settings.BACKEND_HOST
     response = requests.get(url)
@@ -66,8 +73,12 @@ def community_definition(request):
         data = json.loads(response.content)
         for d in data:
             d['id'] = '%d' %d['id']
+            try:
+                data = Community.objects.get(id_backend=d['id'])
+                d['name'] = data.name
+            except Community.DoesNotExist:
+                pass
             elenco.append(d)
-    # TODO: gestire nomi custom
     return render(request, 'sito/community_definition.html', {'section':'community', 'elenco': elenco})
 
 def community(request):
