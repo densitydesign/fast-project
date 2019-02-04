@@ -5,15 +5,13 @@
 
 {% block content %}
 <div style="width:100%; clear:both;">
-  {% if community_name%}<h1>Community<br/><span style="font-weight:700;text-transform:uppercase;">{{community_name}}</span></h1>{% endif %}
-
+  
   <div id="filtri-container">
-    <div>
       <a href="javascript:toggleFiltri()" class="header" style="width:70px; float:left; ">FILTERS</a>
-    </div>
-    <div style="float:right;">
+      <a style="margin:auto;">
+    {% if community_name%}Community: <span style="font-weight:700;text-transform:uppercase;">{{community_name}}</span>{% endif %}
+</a>
       <a href="{% url 'community' %}"  class="header" style="float:right;">BACK</a>
-  </div>
 </div>
 
 <div style="width:100%;">
