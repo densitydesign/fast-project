@@ -8,21 +8,21 @@
   
   <div id="filtri-container">
       <a href="javascript:toggleFiltri()" class="header" style="width:70px; float:left; ">FILTERS</a>
+      {% if community_name%}
       <a style="margin:auto;">
-    {% if community_name%}Community: <span style="font-weight:700;text-transform:uppercase;">{{community_name}}</span>{% endif %}
-</a>
+        Community: <span style="font-weight:700;text-transform:uppercase;">{{community_name}}</span>
+      </a>
+      {% endif %}
       <a href="{% url 'community' %}"  class="header" style="float:right;">BACK</a>
 </div>
 
-<div style="width:100%;">
+<div style="width:100%; text-align:center;">
 {% if compare %}
-<div style="width:80%;">
-<div style="float:right;">{{ competitor }}</div>
-sirenuse
+<i class="fas fa-arrow-left"style="padding-right:30px;"></i> Sirenuse <span style="padding-left:30px;padding-right:30px;">•</span> {{ competitor }} <i class="fas fa-arrow-right"style="padding-left:30px;"></i>
 </div>
 {% endif %}
 
-  <div class="chart-example" id="graph" style="width:100%; height:600px; float:left;"></div>
+  <div class="chart-example" id="graph" style="width:90%; margin-left:5%; height:600px; float:left;"></div>
 
   <div style="width:360px; margin:auto;">
       <div class="submenu-link {% if tipo == 'influencers' %}selected{% endif %}">

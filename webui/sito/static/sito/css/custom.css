@@ -224,10 +224,10 @@ div.hashtag {
 div.tooltip { 
     position: absolute;     
     text-align: center;     
-    width: 200px;          
+    width: 300px;          
     height: 45px;         
     padding: 10px;       
-    font: 22px sans-serif;    
+    font: 16px sans-serif;    
     background: lightsteelblue; 
     border: 0px;    
     border-radius: 8px;     
@@ -308,7 +308,8 @@ div.submenu-link {
   float:left;
   text-align:center;
 }
-.fas {
+
+div.submenu-link .fas {
   color: white;
   background: #9780b2;
   padding:14px;
@@ -322,7 +323,7 @@ div.submenu-link {
 .submenu-link a.selected{
   color:#330867;
 }
-.fas:hover,
-a.selected .fas{
+div.submenu-link .fas:hover,
+div.submenu-link a.selected .fas{
   background: #330867;
 }
