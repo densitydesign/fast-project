@@ -1,5 +1,7 @@
 {% extends 'sito/base.html' %}
 
+{% block legenda %}<img src="/static/sito/img/legenda_community{% if tipo != 'influencers' %}_filter{% else%}_detail{% endif %}.png" />{% endblock %}
+
 
 {% block content %}
 <div style="width:100%; clear:both;">
