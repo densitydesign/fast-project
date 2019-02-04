@@ -5,6 +5,7 @@
 
 {% block bottom_script %}
 <script src="/static/sito/js/lodash.js"></script>
+<script src="/static/sito/js/moment.js"></script>
 <script src="/static/sito/js/plotly-latest.min.js"></script>
 
 <script src="/static/sito/dati_test/metrics.js"></script>
@@ -116,7 +117,7 @@
   }
 
    // Variabili di configurazione
-  var URL_BASE = "{{ backend }}"; // TODO: usare url vero
+  var URL_BASE = "{{ backend }}";
   var ID_SIRENUSE = '2252447111';
   var limit = 10;
 
@@ -282,7 +283,7 @@ function disegnaMetriche() {
   var fashion = metriche['content']['fashion'];
   var lifestyle = metriche['content']['lifestyle'];
   var dataseta = [ambient, fashion, lifestyle];
-
+ 
   data = {
         labels: ['ambient', 'fashion', 'lifestyle'],
         datasets: [{
@@ -338,7 +339,11 @@ function disegnaMetriche() {
 
   // LINE
   var ctx1 = $('#line-chart');
-  var calendar = metriche['dates']
+  // Convert epoch to readable dates
+
+  var calendar = _.map(metriche['dates'], function(e) {
+    return moment(parseInt(e)*1000).format('gg/MM/YYYY')
+  });
   var likesA = metriche['likes']
 
   var lineDataSets = {
@@ -372,6 +377,8 @@ function disegnaMetriche() {
       },
   }
 
+  $('#results-graph').remove(); // this is my <canvas> element
+  $('#graph-container').append('<canvas id="results-graph"><canvas>');
   ctx1.html('');
   var myLineChart = new Chart(ctx1, {
       type: 'line',
