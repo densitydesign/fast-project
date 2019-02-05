@@ -3,8 +3,9 @@ from datetime import datetime
 
 from pymongo import UpdateOne
 
-from analysis.brand import union, dateGroupByKey, get_date
-from analysis import brands, posts_coll, stats_coll
+from brand import union, dateGroupByKey, get_date
+from brand.parsers import get_data, add_logging_arguments, add_data_arguments, parse_arguments_with, setup_logger
+
 from bson import ObjectId
 
 def convert_to_id(x):
@@ -99,10 +100,31 @@ def brand_stats(brand, post_coll, stats_coll):
 	return stats_coll.bulk_write([UpdateOne({'_id': _id}, {"$set": row.to_dict()}, upsert=True) for _id, row in metrics.iterrows()])
 
 
+def custom_parser(parser):
+
+	parser.add_argument('--batch-size',
+                        default=1000,
+                        type=int,
+                        help="Batch size to be used when performing bulk enrich")
+	return parser
+
 if __name__ == "__main__":
+
+	from settings import brands
+
+	args = parse_arguments_with([add_data_arguments, add_logging_arguments, custom_parser])
+
+	logger = setup_logger(args)
+
+	data = get_data(args)
+
+	posts_coll = data["posts"]
+	stats_coll = data["stats"]
+
+	batch_size = args.batch_size
 
 	for brand in brands:
 
-		print("Writing of brand %s" % brand)
-		print( brand_stats(brand, post_coll=posts_coll, stats_coll=stats_coll).bulk_api_result)
+		logger.info("Writing of brand %s" % brand)
+		logger.info( brand_stats(brand, post_coll=posts_coll, stats_coll=stats_coll).bulk_api_result)
 
