@@ -13,9 +13,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'lf5!!t50!3ed198z=*e1z-x&f(f^$k79_7gvya8wm64*ijv+6('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['131.175.141.248']
+ALLOWED_HOSTS = ['131.175.141.248', 'localhost']
 
 
 # Application definition
@@ -113,5 +113,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'MEDIA/')
 STATIC_ROOT = join(BASE_DIR, 'STATIC')
 MEDIA_URL = '/files/'
 
-# BACKEND_HOST = "http://192.168.60.50:8080"
-BACKEND_HOST = "http://131.175.141.248/public-api"
+if DEBUG:
+    BACKEND_HOST = "http://localhost:8080"
+else:
+    BACKEND_HOST = "http://131.175.141.248/public-api"
