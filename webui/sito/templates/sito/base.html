@@ -18,11 +18,11 @@
     <!-- Rounded switch -->
     <div style="margin-right:45%; margin-top:14px;float:right;">
       <form id="change" action="{% url 'change-section' %}" method="post">{% csrf_token %}
-      Brand
+      <span {% if section == 'brand' %}class="switch-selected"{% endif %}>Brand</span>
     <label class="switch">
       <input type="checkbox" id="switch" name="switch" value="community" {% if section == 'community' %}checked{% endif %}>
       <span class="slider round"></span>
-    </label> Communities  
+    </label> <span {% if section == 'community' %}class="switch-selected"{% endif %}>Communities</span>
   </form>
   </div>
 </header>

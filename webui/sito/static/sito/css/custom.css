@@ -14,7 +14,11 @@ div#slider {
     float: right;
     margin-right: 40px;
 }
-
+.switch-selected {
+  text-decoration:underline;
+  font-weight:700;
+  color: #330867;
+}
 div.submenu {
   clear:both;
   width: 96%;
