@@ -4,78 +4,53 @@
 
 
 {% block content %}
-<div style="width:100%; clear:both;">
-  <div id="filtri-container">
+    <div style="width:100%; clear:both;">
+    <div id="filtri-container">
     <a href="{% url 'community-definition' %}"  class="header" style="float:right;">BACK</a>
-</div>
+    </div>
 
-<div style="width:100%;">
-  <div id="graph" style="width:100%; height:600px; float:left;"></div>
-</div>
-{% endblock %}
+    <div style="width:100%;">
+    <div id="graph" style="width:100%; height:600px; float:left;"></div>
+    </div>
+    {% endblock %}
 
 
 {% block bottom_script %}
-<script src="/static/sito/js/lodash.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/1.8.32/go-debug.js"></script>
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/1.8.32/go.js"></script> -->
-<script src="/static/sito/js/dati.js"></script>
-<script src="/static/sito/js/HyperlinkText.js"></script>
+    <script src="/static/sito/js/d3.min.js"></script>
+    <script src="/static/sito/js/forces.js"></script>
 
-<script type="text/javascript">  
 
-var make = go.GraphObject.make;
-var myDiagram = make(go.Diagram, "graph", // the ID of the DIV HTML element
-        {
-          initialContentAlignment: go.Spot.Center
-        });
+    
+    
+    <script type="text/javascript">;
+$(document).ready( function() {
 
-  
-myDiagram.nodeTemplate =
-    make(go.Node, "Auto", 
-    { // when the user clicks on a Node, highlight all Links coming out of the node
-        // and all of the Nodes at the other ends of those Links.
-        click: function(e, node) {
-            // highlight all Links and Nodes coming out of a given Node
+    (function() {
+        
+        var nodes = {
+            {% for n in nodes %}
+            "{{n.id}}": new Node("{{n.id}}",{{n.size}},"{{n.color}}","{{n.label}}"){% if not forloop.last %},{% endif %}
+            {% endfor %}
+        };
+                             
+                             
+        var links = [
+            {% for e in edges %}
+            [ "{{e.source}}","{{e.target}}"]{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
 
-            path = node.data.key;
-            if (path.substr(0,1) == 'c') {
-              path = path.substring(1).replace(/\s+/g, '').toLowerCase();
-              document.location.href = '/community/'+path;
-            }
-          }
-      },
+        var sx = $('#graph').width();
+        var sy = $('#graph').height();
+        
+        var net = new Net(nodes, links, sx, sy);
+        net.random_place();
 
-      make(go.Shape,
-        { figure: "Circle", fill: "white", width: 1, height: 1 },  // default Shape.fill value
-        new go.Binding("fill", "color"),
-        new go.Binding("width", "size"),
-        new go.Binding("height", "size")),  // binding to get fill from nodedata.color
-      make(go.TextBlock,
-        { margin: 0 },
-        new go.Binding("text")),  // binding to get TextBlock.text from nodedata.key
-    );
+        net.draw("#graph");
+        
+    })();
 
-  var nodeDataArray = [
-    {% for n in nodes %}
-    { key: "{{n.id}}", text:"{{n.label}}", color: "{{n.color}}", size: {{n.size}} }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ];
-
-  myDiagram.linkTemplate =
-    make(go.Link,
-      { curve: go.Link.Bezier },  // Bezier curve
-      make(go.Shape)
-    );
-
-  var linkDataArray = [
-    {% for e in edges %}
-    { from: "{{e.source}}", to: "{{e.target}}" }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-  ];
-
-  myDiagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
-
+});
 
 </script>
-{% endblock %}
+    {% endblock %}
