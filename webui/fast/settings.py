@@ -116,6 +116,6 @@ MEDIA_URL = '/files/'
 PRODUCTION_ENVIRONMENT = True
 
 if PRODUCTION_ENVIRONMENT:
-    BACKEND_HOST = "http://131.175.141.248/public-api"
+    BACKEND_HOST = "http://localhost:5000" #"http://131.175.141.248/public-api"
 else:
     BACKEND_HOST = "http://localhost:8080"
