@@ -22,11 +22,11 @@ def imposta_filtri(request):
 
 def brand_content(request):
     return render(request, 'sito/brand.html', {'section':'brand',
-                   'tipo': 'content', 'backend': settings.BACKEND_HOST})
+                   'tipo': 'content', 'backend': settings.REMOTE_BACKEND})
 
 def brand_time(request):
     return render(request, 'sito/brand.html', {'section':'brand',
-                   'tipo': 'time', 'backend': settings.BACKEND_HOST})
+                   'tipo': 'time', 'backend': settings.REMOTE_BACKEND})
 
 def brand_hashtags_json(request, id_community = "2252447111", filter_from=None, filter_to=None):
     url = '%s/metrics/%s?window=month'%(settings.BACKEND_HOST, id_community)
@@ -49,7 +49,7 @@ def brand_hashtags(request):
     
     return render(request, 'sito/brand_hashtags.html',
                   {'section':'brand',
-                   'backend': settings.BACKEND_HOST,
+                   'backend': settings.REMOTE_BACKEND,
                    'brand': competitor,
                    'start': start,
                    'end': end,
@@ -319,7 +319,7 @@ def community_detail(request, id_community, tipo='influencers'):
                                                           'tipo':tipo,
                                                           'compare':compare,
                                                           'competitor':competitor_name,
-                                                          'backend': settings.BACKEND_HOST})
+                                                          'backend': settings.REMOTE_BACKEND})
 
 
 def change_section(request):
